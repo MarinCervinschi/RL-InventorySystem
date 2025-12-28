@@ -16,8 +16,6 @@ from src.mdp import (
 )
 from src.simulation import SimulationEngine, SystemParameters
 
-from .factory import InventoryEnvironmentFactory
-
 
 class InventoryEnvironment(gym.Env):
     """
@@ -281,40 +279,3 @@ def register_environment():
         )
     except gym.error.Error:
         pass  # Already registered
-
-
-if __name__ == "__main__":
-    # Test the environment
-    print("Testing InventoryEnvironment...")
-
-    # Create environment
-    env = InventoryEnvironmentFactory.create_default()
-    print(f"Observation space: {env.observation_space}")
-    print(f"Action space: {env.action_space} ({env.action_space.n} actions)")
-
-    # Reset and run a few steps
-    obs, info = env.reset(seed=42)
-    print(f"\nInitial observation: {obs}")
-
-    for step in range(5):
-        action = env.action_space.sample()
-        obs, reward, terminated, truncated, info = env.step(action)
-
-        print(f"\nStep {step + 1}:")
-        print(f"  Action: {env.action_space_config.get_action(action)}")
-        print(f"  Reward: {reward:.2f}")
-        print(f"  Cost: {info['cost']:.2f}")
-        print(f"  Observation: {obs}")
-
-        if terminated or truncated:
-            break
-
-    # Render final state
-    print("\nFinal state:")
-    env.render()
-
-    # Get statistics
-    stats = env.get_episode_statistics()
-    print(f"\nEpisode statistics: {stats}")
-
-    print("\n✓ Environment test passed!")

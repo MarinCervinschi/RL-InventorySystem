@@ -272,36 +272,3 @@ class SimulationEngine:
         }
 
         return state, info
-
-
-if __name__ == "__main__":
-    # Test simulation engine
-    print("Testing SimulationEngine...")
-
-    from ..mdp import create_initial_state, order_both_products
-
-    # Create system
-    params = SystemParameters.create_default()
-    engine = SimulationEngine(params, random_state=np.random.default_rng(42))
-
-    # Initialize
-    initial_state = create_initial_state(50, 50)
-    engine.reset(initial_state)
-
-    print(f"Initial state: {initial_state}")
-
-    # Execute a few decisions
-    state = initial_state
-    for day in range(5):
-        action = order_both_products(20, 15)
-        next_state, info = engine.execute_daily_decision(state, action)
-
-        print(f"\nDay {day + 1}:")
-        print(f"  Action: {action}")
-        print(f"  Next state: {next_state}")
-        print(f"  Customers: {info['num_customers']}")
-        print(f"  Order arrivals: {info['num_order_arrivals']}")
-
-        state = next_state
-
-    print("\n✓ Simulation engine test passed!")
