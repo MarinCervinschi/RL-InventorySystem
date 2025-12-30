@@ -67,48 +67,39 @@ This represents the effective inventory level accounting for backorders and inco
 ---
 
 ## 🎬 2. Action Space (A)
+The action space represents the replenishment decisions made by the agent at the beginning of each day. Since the system manages two distinct products simultaneously, the action is a multi-dimensional vector representing independent order quantities for each product.
 
 ### Mathematical Definition
 
-The action at time _t_ is a 2-dimensional vector:
+At each decision epoch $t$, the agent selects an action vector $a_t \in \mathbb{N}^2$:
 
-**$a_t = (q₀, q₁)$**
+**$a_t = (a^0_t, a^1_t)$**
 
-Where:
+Where for each product $i \in \{0, 1\}$: 
+- $a^i_t \in \{0, 1, \dots, Z_{max}\}$: The quantity of units to order from the supplier for product $i$.
 
-- **$q₀$** ∈ $Q₀$: Order quantity for product 0
-- **$q₁$** ∈ $Q₁$: Order quantity for product 1
+## Action Bounds and Constraints
 
-### Discretization
+The action space is discrete and bounded. We define a maximum order quantity $Z_{max}$ to limit the search space to a feasible range, given that demand per period is relatively low (max 4 or 5 units per day).
 
-To make the problem tractable, we discretize the action space:
+**$$A = \{ a \in \mathbb{Z}^2 \mid 0 \le a^i \le Z_{max} \quad \forall i \in \{0, 1\} \}$$**
 
-**$Q_i = \{0, \Delta, 2\Delta, ..., Q_{\max}\}$**
+In our implementation, we set $Z_{max} = 20$.
+- $a^i_t = 0$: No order is placed for product $i$ (Corresponds to "Review but do not order").
+- $a^i_t > 0$: An order of $a^i_t$ units is placed immediately.
 
-Where:
 
-- **$\Delta$**: Order increment (e.g., 5, 10, or 20 units)
-- **$Q_{\max}$**: Maximum order quantity (e.g., 100 units)
+### Hyperparameter: Maximum Order Quantity ($Z$)
 
-### Action Space Cardinality
-
-**$|A| = |Q_0| \times |Q_1|$**
-
-Examples:
-
-- **Coarse** ($\Delta=20$, $Q_{\max}=100$): |A| = 6 × 6 = 36
-- **Medium** ($\Delta=10$, $Q_{\max}=100$): |A| = 11 × 11 = 121
-- **Fine** ($\Delta=5$, $Q_{\max}=100$): |A| = 21 × 21 = 441
-
-### No-Order Action
-
-The special case of no orders:
-
-**$a_0 = (0, 0)$**
+The parameter $Z$ defines the upper bound of the action space. This is a critical hyperparameter that requires tuning:
+- Too Small ($Z < \text{Optimal Batch}$): Handicaps the agent by preventing it from placing sufficiently large orders to cover demand spikes or long lead times.
+- Too Large ($Z \gg \text{Demand}$): Unnecessarily increases the size of the action space (exploration difficulty), potentially slowing down the learning process as the agent wastes time exploring uselessly large order quantities.
 
 ---
 
 ## 🔄 3. Transition Dynamics (P)
+
+The transition dynamics $P(s_{t+1} | s_t, a_t)$ describe how the system evolves from the current state $s_t$ to the next state $s_{t+1}$ given an action $a_t$. In this reinforcement learning context, the transition function is model-free (unknown to the agent) and is implicitly defined by the Discrete Event Simulation (DES) logic implemented in SimPy.
 
 ### Transition Function
 
@@ -118,7 +109,27 @@ The transition probability is:
 
 This represents the probability of reaching state $s'$ from state $s$ after taking action $a$.
 
-### Components of Transition
+### Stochastic Elements
+
+The environment is stochastic and is driven by two primary sources of randomness defined in the assignment:
+
+1. **Demand ($D_{t,j}$)**
+
+The customer demand for product $j$ at time $t$ follows a discrete probability distribution:
+
+- **Product 1**: D ∈ {1, 2, 3, 4} with probabilities $\{\frac{1}{5}, \frac{1}{3}, \frac{1}{3}, \frac{1}{6}\}$
+- **Product 2**: D ∈ {2, 3, 4, 5} with probabilities $\{\frac{1}{5}, \frac{1}{3}, \frac{1}{3}, \frac{1}{5}\}$
+
+2. **Lead Time ($L_j$)**
+
+The time delay between placing an order and receiving it is modeled as a continuous random variable:
+
+1. **Product 1**: $L \sim U(0.5, 1.0)$ days
+2. **Product 2**: $L \sim U(0.2, 0.7)$ days.
+
+**Note:** The lead time is handled internally by the simulator and is not directly observable by the agent.
+
+
 
 The transition has **stochastic** and **deterministic** components:
 
@@ -130,28 +141,6 @@ When action **$a = (q₀, q₁)$** is taken:
 
 Orders are placed and will arrive after a stochastic lead time.
 
-#### 3.2 Stochastic: Customer Demand
-
-During period [t, t+1], customers arrive according to:
-
-**Customer arrivals ~ Poisson($\lambda$ = 0.1)** (exponential inter-arrival)
-
-Each customer demands:
-
-**For Product 0:**
-
-- $D_0 \in \{1, 2, 3, 4\}$
-- $P(D_0 = k) = \{1/6, 1/3, 1/3, 1/6\}$
-
-**For Product 1:**
-
-- $D_1 \in \{5, 4, 3, 2\}$
-- $P(D_1 = k) = \{1/8, 1/2, 1/4, 1/8\}$
-
-**Total demand** in period [t, t+1]:
-
-**$D_i^{total} = \sum_{j=1}^{N} D_i^{(j)}$**
-where N ~ Poisson(0.1) is the number of arrivals.
 
 #### 3.3 Demand Fulfillment
 
@@ -285,6 +274,8 @@ Given:
 ## 🎲 5. Discount Factor ($\gamma$)
 
 **$\gamma \in [0, 1]$**
+- $γ = 0$: Only immediate reward matters (myopic/shortsighted)
+- $γ → 1$: Future rewards matter more (farsighted)
 
 Typical values:
 
