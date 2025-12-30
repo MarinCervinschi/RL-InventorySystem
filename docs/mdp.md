@@ -20,17 +20,26 @@ Let's define each component for our inventory management problem.
 
 ## 🎯 1. State Space ($S$)
 
+The inventory control problem is modeled as a Partially Observable Markov Decision Process (POMDP) due to the unobservable lead times. We utilize Frame Stacking to allow the agent to infer the latent state of in-transit orders.
+
 ### Mathematical Definition
 
-The state at time _t_ is a 6-dimensional vector:
+At each decision epoch $t$ (beginning of day $t$), the environment emits an observation vector $o_t \in \mathbb{R}^6$:
 
-**$s_t = (I_0, I_1, B_0, B_1, O_0, O_1)$**
+**$o_t = \bigl(I_0^t, I_1^t, B_0^t, B_1^t, O_0^t, O_1^t\bigr)$**
 
-Where:
+Where for each product $i \in \{0, 1\}$:
+- **$I_0^t, I_1^t \in \mathbb{Z}$**: On-hand inventory levels for products 0 and 1
+- **$B_0^t, B_1^t \in \mathbb{Z}_+$**: Backlog (unsatisfied demand)
+- **$O_0^t, O_1^t \in \mathbb{Z}_+$**: Outstanding (in-transit) orders
 
-- **$I_0, I_1$** ∈ $\mathbb{Z}$: On-hand inventory levels for products 0 and 1
-- **$B_0, B_1$** ∈ $\mathbb{Z}_+$: Backorder levels (unfulfilled demand)
-- **$O_0, O_1$** ∈ $\mathbb{Z}_+$: Outstanding orders (in-transit)
+The **state** at time $t$ is defined as a sequence of the most recent $k+1$ observations:
+
+**$s_t = \bigl[o_t, o_{t-1}, \dots, o_{t-k}\bigr]$**
+
+with $k = 3$ in our implementation.
+
+Thus, the state is a $(k+1) \times 6$-dimensional vector, flattened when used as input to the neural network.
 
 ### State Space Bounds
 
@@ -39,11 +48,11 @@ Note: Negative inventory means backorders ($I_i < 0 \rightarrow B_i = -I_i$)
 
 ### Inventory Position
 
-A key derived quantity is the **inventory position**:
+For completeness, the inventory position for product $i$ at time $t$ is defined as:
 
 **$IP_i(s) = I_i - B_i + O_i$**
 
-This represents the effective inventory level accounting for backorders and incoming orders.
+This represents the effective inventory level accounting for backorders and incoming orders. While not explicitly included as a separate state variable, this quantity is implicitly available to the agent through the stacked observations.
 
 ### Continuous vs Discrete
 
