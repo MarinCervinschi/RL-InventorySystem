@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Tuple
 import numpy as np
 
+import gymnasium as gym
 from gymnasium import spaces
 
 from src.mdp.state import (
@@ -14,7 +15,7 @@ from src.mdp.reward import StandardRewardFunction, CostParameters
 from src.simulation import InventorySimulation, SystemParameters
 
 
-class InventoryEnvironment:
+class InventoryEnvironment(gym.Env):
     """
     Gymnasium environment for inventory management with frame stacking.
 
