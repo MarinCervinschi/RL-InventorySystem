@@ -7,7 +7,8 @@ class InventoryEnvironmentFactory:
     @staticmethod
     def create_default() -> InventoryEnvironment:
         """Create environment with default parameters."""
-        return InventoryEnvironment(k=3, Q_max=20, episode_length=100, gamma=0.99)
+        # TODO adjust Q_max for default?
+        return InventoryEnvironment(k=3, Q_max=200, episode_length=100, gamma=0.99)
 
     @staticmethod
     def create_short_horizon(gamma: float = 0.95) -> InventoryEnvironment:
