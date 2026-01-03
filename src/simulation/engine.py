@@ -1,254 +1,186 @@
-from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 import numpy as np
 import simpy
 
-from src.mdp.action import InventoryAction
-from src.mdp.state import Observation, create_observation
-
-
-@dataclass(frozen=True)
-class SystemParameters:
-    """
-    Stochastic system parameters from assignment specification.
-
-    Demand distributions:
-    - Product 0: {1:1/6, 2:1/3, 3:1/3, 4:1/6}
-    - Product 1: {5:1/8, 4:1/2, 3:1/4, 2:1/8}
-
-    Lead times:
-    - Product 0: Uniform(0.5, 1.0) days
-    - Product 1: Uniform(0.2, 0.7) days
-
-    Customer arrivals:
-    - Exponential with λ = 0.1 (mean inter-arrival = 10 days)
-    """
-
-    # Customer arrival rate
-    lambda_arrival: float = 0.1
-
-    # Demand distributions
-    demand_0_values: Tuple[int, ...] = (1, 2, 3, 4)
-    demand_0_probs: Tuple[float, ...] = (1 / 6, 1 / 3, 1 / 3, 1 / 6)
-
-    demand_1_values: Tuple[int, ...] = (5, 4, 3, 2)
-    demand_1_probs: Tuple[float, ...] = (1 / 8, 1 / 2, 1 / 4, 1 / 8)
-
-    # Lead time distributions
-    lead_time_0_min: float = 0.5
-    lead_time_0_max: float = 1.0
-
-    lead_time_1_min: float = 0.2
-    lead_time_1_max: float = 0.7
-
-    @staticmethod
-    def create_default() -> "SystemParameters":
-        """Create default system parameters."""
-        return SystemParameters()
+from src.mdp.action import Action
+from src.mdp.state import State, create_state
+from src.simulation.customer import CustomerGenerator
+from src.simulation.logger import SimulationLogger
+from src.simulation.product import Product, create_default_products
+from src.simulation.supplier import SupplierManager
+from src.simulation.warehouse import Warehouse
 
 
 class InventorySimulation:
     """
-    SimPy-based discrete event simulation for inventory management.
+    Inventory management simulation
 
-    Simulates:
-    - Customer arrivals and demand
-    - Order placement
-    - Order arrivals (after lead time)
-    - Inventory updates
+    Components:
+    - Warehouse: Manages inventory state
+    - SupplierManager: Handles order placement and delivery
+    - CustomerGenerator: Generates customer arrivals and demands
+    - EventLogger: Tracks statistics
     """
 
     def __init__(
         self,
-        params: SystemParameters,
+        products: Optional[List[Product]] = None,
         random_state: Optional[np.random.Generator] = None,
     ):
         """
-        Initialize simulation.
+        Initialize simulation with modular components.
 
         Args:
-            params: System parameters
+            products: List of products (defaults to assignment products)
             random_state: Random number generator
         """
-        self.params = params
         self.rng = random_state or np.random.default_rng()
 
-        # SimPy environment (will be created in reset)
+        # Initialize products (defaults to assignment specification)
+        if products is None:
+            self.products = list(create_default_products())
+        else:
+            self.products = products
+
+        self.num_products = len(self.products)
+
+        # Initialize modular components
+        self.warehouse = Warehouse(num_products=self.num_products)
+        self.logger = SimulationLogger(num_products=self.num_products)
+
+        # SimPy environment (created in reset)
         self.env: Optional[simpy.Environment] = None
+        self.supplier_manager: Optional[SupplierManager] = None
+        self.customer_generator: Optional[CustomerGenerator] = None
 
-        # Current physical state (not frame-stacked)
-        self.net_inventory: List[int] = [0, 0]
-        self.outstanding_orders: List[int] = [0, 0]
+        # Current day counter
+        self.current_day = 0
 
-        # Statistics for current day
-        self.num_customers_today = 0
-        self.total_demand_today = [0, 0]
-        self.num_order_arrivals_today = [0, 0]
-
-    def reset(self, initial_observation: Observation):
+    def reset(self, initial_state: State):
         """
         Reset simulation to initial state.
 
         Args:
-            initial_observation: Starting observation
+            initial_state: Starting state
         """
         # Create new SimPy environment
         self.env = simpy.Environment()
 
-        # Set physical state
-        self.net_inventory = list(initial_observation.net_inventory)
-        self.outstanding_orders = list(initial_observation.outstanding_orders)
+        # Reset warehouse state
+        for i in range(self.num_products):
+            self.warehouse.set_inventory(i, initial_state.net_inventory[i])
 
-        # Reset statistics
-        self.num_customers_today = 0
-        self.total_demand_today = [0, 0]
-        self.num_order_arrivals_today = [0, 0]
+        # Initialize supplier manager (needs env)
+        self.supplier_manager = SupplierManager(
+            products=self.products,
+            warehouse=self.warehouse,
+            env=self.env,
+            rng=self.rng,
+        )
+
+        # Initialize customer generator
+        self.customer_generator = CustomerGenerator(
+            products=self.products,
+            rng=self.rng,
+        )
+
+        # Reset logger
+        self.logger.reset()
+
+        # Reset counters
+        self.current_day = 0
 
         # Start customer arrival process
         self.env.process(self._customer_arrival_process())
 
-    def execute_daily_decision(
-        self, action: InventoryAction
-    ) -> Tuple[Observation, dict]:
+    def execute_daily_decision(self, action: Action) -> Tuple[State, dict]:
         """
         Execute one decision epoch (one day).
 
         Steps:
-        1. Place orders (if any)
+        1. Place orders (if any) via SupplierManager
         2. Run simulation for one day
-        3. Process all events (customers, order arrivals)
-        4. Return new observation
+        3. Process all events (customers via CustomerGenerator)
+        4. Return new state from Warehouse
 
         Args:
             action: Ordering decision
 
         Returns:
-            (next_observation, info_dict)
+            (next_state, info_dict)
         """
-        assert self.env is not None, "SimPy environment not initialized."
+        assert self.env is not None, "Must call reset() first"
+        assert self.supplier_manager is not None, "Supplier manager not initialized"
 
-        # Reset daily statistics
-        self.num_customers_today = 0
-        self.total_demand_today = [0, 0]
-        self.num_order_arrivals_today = [0, 0]
+        # Start new day in logger
+        net_inv, outstanding = self.warehouse.get_state_as_dict()
+        self.logger.start_new_day(self.current_day, net_inv, outstanding)
 
-        # Step 1: Place orders
-        for j in range(2):
-            if action.order_quantities[j] > 0:
-                self._place_order(j, action.order_quantities[j])
+        # Step 1: Place orders via SupplierManager
+        for product_id in range(self.num_products):
+            quantity = action.order_quantities[product_id]
+            if quantity > 0:
+                self.supplier_manager.place_order(product_id, quantity)
+                self.logger.log_order_placement(self.env.now, product_id, quantity)
 
         # Step 2: Run simulation for 1 day
         target_time = self.env.now + 1.0
         self.env.run(until=target_time)
 
-        # Step 3: Create observation
-        next_obs = create_observation(
-            net_inventory_0=self.net_inventory[0],
-            net_inventory_1=self.net_inventory[1],
-            outstanding_0=self.outstanding_orders[0],
-            outstanding_1=self.outstanding_orders[1],
-        )
+        # Step 3: Get state from Warehouse
+        next_state = self.get_current_state()
 
-        # Step 4: Return with info
+        # Step 4: Build info dict from logger
+        daily_stats = self.logger.get_current_day_stats()
         info = {
-            "num_customers": self.num_customers_today,
-            "total_demand": tuple(self.total_demand_today),
-            "num_order_arrivals": tuple(self.num_order_arrivals_today),
-            "net_inventory": tuple(self.net_inventory),
-            "outstanding": tuple(self.outstanding_orders),
+            "num_customers": daily_stats["num_customers"],
+            "total_demand": tuple(
+                daily_stats["total_demand"].get(i, 0) for i in range(self.num_products)
+            ),
+            "num_order_arrivals": tuple(
+                daily_stats["num_order_arrivals"].get(i, 0)
+                for i in range(self.num_products)
+            ),
+            "net_inventory": net_inv,
+            "outstanding": outstanding,
         }
 
-        return next_obs, info
+        # Increment day counter
+        self.current_day += 1
 
-    def _place_order(self, product_id: int, quantity: int):
-        """
-        Place an order with the supplier.
-
-        Args:
-            product_id: Which product
-            quantity: How many units
-        """
-        assert self.env is not None, "SimPy environment not initialized."
-
-        # Increase outstanding immediately
-        self.outstanding_orders[product_id] += quantity
-
-        # Sample lead time
-        if product_id == 0:
-            lead_time = self.rng.uniform(
-                self.params.lead_time_0_min, self.params.lead_time_0_max
-            )
-        else:
-            lead_time = self.rng.uniform(
-                self.params.lead_time_1_min, self.params.lead_time_1_max
-            )
-
-        # Schedule order arrival using SimPy process
-        self.env.process(self._order_arrival_process(product_id, quantity, lead_time))
-
-    def _order_arrival_process(self, product_id: int, quantity: int, lead_time: float):
-        """
-        SimPy process for order arrival.
-
-        Args:
-            product_id: Which product
-            quantity: How many units
-            lead_time: Delay before arrival
-        """
-        assert self.env is not None, "SimPy environment not initialized."
-
-        # Wait for lead time
-        yield self.env.timeout(lead_time)
-
-        # Order arrives
-        self.outstanding_orders[product_id] -= quantity
-
-        # Add to net inventory
-        # Note: If net_inventory < 0 (backorders exist), arriving units
-        # first satisfy backorders, then add to on-hand
-        self.net_inventory[product_id] += quantity
-
-        # Track statistics
-        self.num_order_arrivals_today[product_id] += 1
+        return next_state, info
 
     def _customer_arrival_process(self):
         """
         SimPy process generating customer arrivals.
 
-        Customers arrive according to exponential distribution.
-        Each customer demands from both products.
+        Uses CustomerGenerator component to generate arrivals and demands.
         """
-        assert self.env is not None, "SimPy environment not initialized."
+        assert self.env is not None, "SimPy environment not initialized"
+        assert self.customer_generator is not None, "Customer generator not initialized"
 
         while True:
-            # Wait for next customer
-            inter_arrival = self.rng.exponential(1.0 / self.params.lambda_arrival)
+            # Wait for next customer (via CustomerGenerator)
+            inter_arrival = self.customer_generator.sample_interarrival_time()
             yield self.env.timeout(inter_arrival)
 
-            # Customer arrives - demand both products
-            demand_0 = self.rng.choice(
-                self.params.demand_0_values, p=self.params.demand_0_probs
-            )
-            demand_1 = self.rng.choice(
-                self.params.demand_1_values, p=self.params.demand_1_probs
-            )
+            # Generate customer demands (via CustomerGenerator)
+            demands_dict = self.customer_generator.generate_demands()
 
-            # Fulfill demand (reduce net inventory)
-            # If net_inventory goes negative, those are backorders
-            self.net_inventory[0] -= demand_0
-            self.net_inventory[1] -= demand_1
+            # Fulfill demands via Warehouse
+            for product_id, demand in demands_dict.items():
+                self.warehouse.fulfill_demand(product_id, demand)
 
-            # Track statistics
-            self.num_customers_today += 1
-            self.total_demand_today[0] += demand_0
-            self.total_demand_today[1] += demand_1
+            # Log customer arrival
+            self.logger.log_customer_arrival(self.env.now, demands_dict)
 
-    def get_current_observation(self) -> Observation:
-        """Get current system observation."""
-        return create_observation(
-            net_inventory_0=self.net_inventory[0],
-            net_inventory_1=self.net_inventory[1],
-            outstanding_0=self.outstanding_orders[0],
-            outstanding_1=self.outstanding_orders[1],
+    def get_current_state(self) -> State:
+        """Get current system state from Warehouse."""
+        net_inv, outstanding = self.warehouse.get_state()
+        return create_state(
+            net_inventory_0=net_inv[0],
+            net_inventory_1=net_inv[1],
+            outstanding_0=outstanding[0],
+            outstanding_1=outstanding[1],
         )
