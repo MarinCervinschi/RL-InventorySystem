@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, Protocol
+from typing import Optional
 
-from src.mdp.action import InventoryAction
-from src.mdp.state import Observation
+from src.mdp.action import Action
+from src.mdp.state import State
 
 
 @dataclass(frozen=True)
@@ -37,41 +37,9 @@ class CostComponents:
         return self.ordering_cost + self.holding_cost + self.shortage_cost
 
 
-class RewardFunction(Protocol):
-    """Protocol for reward functions."""
-
-    def __call__(self, obs: Observation, action: InventoryAction) -> float:
-        """
-        Calculate reward for taking action in observation.
-
-        Args:
-            obs: Next observation (after action and events)
-            action: Action taken
-
-        Returns:
-            Reward (negative cost)
-        """
-        ...
-
-    def calculate_costs(
-        self, obs: Observation, action: InventoryAction
-    ) -> CostComponents:
-        """
-        Calculate detailed cost breakdown.
-
-        Args:
-            obs: Next observation
-            action: Action taken
-
-        Returns:
-            Detailed cost components
-        """
-        ...
-
-
-class StandardRewardFunction:
+class RewardFunction:
     """
-    Standard reward function as specified in the assignment.
+    Reward function as specified in the assignment.
 
     R(t) = -[C_order(t) + C_holding(t) + C_shortage(t)]
 
@@ -79,6 +47,9 @@ class StandardRewardFunction:
     - C_order = K·𝟙{q>0} + i·q  (for each product)
     - C_holding = h·max(0, I)  (for each product)
     - C_shortage = π·max(0, -I)  (for each product)
+
+    Design Note: Works with any number of products. The assignment specifies
+    2 products, but this implementation is generic.
     """
 
     def __init__(self, params: Optional[CostParameters] = None):
@@ -90,36 +61,46 @@ class StandardRewardFunction:
         """
         self.params = params or CostParameters()
 
-    def calculate_costs(
-        self, obs: Observation, action: InventoryAction
-    ) -> CostComponents:
+    def calculate_costs(self, state: State, action: Action) -> CostComponents:
         """
-        Calculate detailed cost breakdown.
+        Calculate detailed cost breakdown for N products.
 
         Args:
-            obs: Next observation (after action effects)
+            state: Current state (after action effects)
             action: Action taken
 
         Returns:
             Detailed cost components
+
+        Raises:
+            ValueError: If state and action have different number of products
         """
+        # Validate matching product counts
+        if state.num_products != action.num_products:
+            raise ValueError(
+                f"Product count mismatch: state has {state.num_products} "
+                f"but action has {action.num_products}"
+            )
+
+        num_products = state.num_products
+
         # Ordering costs (K + i·q for each product ordered)
         ordering_cost = 0.0
-        for j in range(2):
+        for j in range(num_products):
             q = action.order_quantities[j]
             if q > 0:
                 ordering_cost += self.params.K + self.params.i * q
 
         # Holding costs (h·I⁺ for each product)
         holding_cost = 0.0
-        for j in range(2):
-            on_hand = obs.get_on_hand_inventory(j)
+        for j in range(num_products):
+            on_hand = state.get_on_hand_inventory(j)
             holding_cost += self.params.h * on_hand
 
         # Shortage costs (π·I⁻ for each product)
         shortage_cost = 0.0
-        for j in range(2):
-            backorders = obs.get_backorders(j)
+        for j in range(num_products):
+            backorders = state.get_backorders(j)
             shortage_cost += self.params.pi * backorders
 
         return CostComponents(
@@ -128,22 +109,16 @@ class StandardRewardFunction:
             shortage_cost=shortage_cost,
         )
 
-    def __call__(self, obs: Observation, action: InventoryAction) -> float:
+    def __call__(self, state: State, action: Action) -> float:
         """
         Calculate reward (negative cost).
 
         Args:
-            obs: Next observation
+            state: Current state
             action: Action taken
 
         Returns:
-            Reward = -total_cost
+            Reward (negative of total cost)
         """
-        costs = self.calculate_costs(obs, action)
+        costs = self.calculate_costs(state, action)
         return -costs.total_cost
-
-
-# Default reward function factory
-def create_default_reward_function() -> StandardRewardFunction:
-    """Create reward function with default parameters."""
-    return StandardRewardFunction(CostParameters())

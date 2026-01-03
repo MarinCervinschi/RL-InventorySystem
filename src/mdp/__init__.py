@@ -1,35 +1,24 @@
-from src.mdp.action import (
-    ActionSpace,
-    InventoryAction,
-    no_order_action,
-    order_both_products,
-)
-from src.mdp.reward import (
-    CostComponents,
-    CostParameters,
-    RewardFunction,
-    StandardRewardFunction,
-    create_default_reward_function,
-)
+from src.mdp.action import Action, ActionSpace, no_order_action, order_both_products
+from src.mdp.reward import CostComponents, CostParameters, RewardFunction
 from src.mdp.state import (
-    InventoryState,
-    Observation,
+    State,
+    StateHistory,
     StateSpace,
-    create_initial_state,
-    create_observation,
-    update_state_with_observation,
+    create_initial_history,
+    create_state,
+    update_history,
 )
 
 __all__ = [
     # State
-    "Observation",
-    "InventoryState",
+    "State",
+    "StateHistory",  # POMDP frame stacking tool
     "StateSpace",
-    "create_observation",
-    "create_initial_state",
-    "update_state_with_observation",
+    "create_state",
+    "create_initial_history",
+    "update_history",
     # Action
-    "InventoryAction",
+    "Action",
     "ActionSpace",
     "order_both_products",
     "no_order_action",
@@ -37,6 +26,4 @@ __all__ = [
     "CostParameters",
     "CostComponents",
     "RewardFunction",
-    "StandardRewardFunction",
-    "create_default_reward_function",
 ]

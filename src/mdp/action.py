@@ -5,23 +5,34 @@ import numpy as np
 
 
 @dataclass(frozen=True)
-class InventoryAction:
+class Action:
     """
-    Represents a replenishment decision.
+    Represents a replenishment decision for N products.
+
+    Design Note: This is an MDP abstraction - the agent's decision.
+    The simulation components (SupplierManager) convert this to orders.
 
     Attributes:
-        order_quantities: Tuple (q_0, q_1) where q_j ∈ [0, Q_max]
+        order_quantities: Tuple (q_0, q_1, ..., q_n) where q_j ∈ [0, Q_max]
+
+    Note: Length determines number of products. Assignment uses 2, but design
+    supports N products for future scalability.
     """
 
-    order_quantities: Tuple[int, int]
+    order_quantities: Tuple[int, ...]
 
-    def __post_init__(self):
-        """Validate action."""
-        if len(self.order_quantities) != 2:
-            raise ValueError("Action must have exactly 2 order quantities")
-        for q in self.order_quantities:
-            if q < 0:
-                raise ValueError(f"Order quantity cannot be negative: {q}")
+    @property
+    def num_products(self) -> int:
+        """Number of products in this action."""
+        return len(self.order_quantities)
+
+    def get_order_quantity(self, product_id: int) -> int:
+        """Get order quantity for a specific product."""
+        if not 0 <= product_id < self.num_products:
+            raise ValueError(
+                f"Product ID {product_id} out of range [0, {self.num_products})"
+            )
+        return self.order_quantities[product_id]
 
 
 class ActionSpace:
@@ -46,41 +57,39 @@ class ActionSpace:
         self.possible_quantities = list(range(Q_max + 1))
 
         # Generate all possible actions
-        self.actions: List[InventoryAction] = []
+        self.actions: List[Action] = []
         self.action_to_index: dict = {}
 
         idx = 0
         for q0 in self.possible_quantities:
             for q1 in self.possible_quantities:
-                action = InventoryAction(order_quantities=(q0, q1))
+                action = Action(order_quantities=(q0, q1))
                 self.actions.append(action)
                 self.action_to_index[action] = idx
                 idx += 1
 
         self.n = len(self.actions)
 
-    def sample(
-        self, random_state: Optional[np.random.Generator] = None
-    ) -> InventoryAction:
+    def sample(self, random_state: Optional[np.random.Generator] = None) -> Action:
         """Sample a random action."""
         if random_state is None:
             random_state = np.random.default_rng()
         idx = random_state.integers(0, self.n)
         return self.actions[idx]
 
-    def get_action(self, index: int) -> InventoryAction:
+    def get_action(self, index: int) -> Action:
         """Get action by index."""
         if not 0 <= index < self.n:
             raise ValueError(f"Index {index} out of range [0, {self.n})")
         return self.actions[index]
 
-    def get_index(self, action: InventoryAction) -> int:
+    def get_index(self, action: Action) -> int:
         """Get index of an action."""
         if action not in self.action_to_index:
             raise ValueError(f"Action {action} not in action space")
         return self.action_to_index[action]
 
-    def is_valid(self, action: InventoryAction) -> bool:
+    def is_valid(self, action: Action) -> bool:
         """Check if action is valid."""
         return (
             0 <= action.order_quantities[0] <= self.Q_max
@@ -88,7 +97,7 @@ class ActionSpace:
         )
 
 
-def order_both_products(quantity_0: int, quantity_1: int) -> InventoryAction:
+def order_both_products(quantity_0: int, quantity_1: int) -> Action:
     """
     Convenience function to create an action.
 
@@ -97,11 +106,11 @@ def order_both_products(quantity_0: int, quantity_1: int) -> InventoryAction:
         quantity_1: Order quantity for product 1
 
     Returns:
-        InventoryAction object
+        Action object
     """
-    return InventoryAction(order_quantities=(quantity_0, quantity_1))
+    return Action(order_quantities=(quantity_0, quantity_1))
 
 
-def no_order_action() -> InventoryAction:
+def no_order_action() -> Action:
     """Create a no-order action (0, 0)."""
-    return InventoryAction(order_quantities=(0, 0))
+    return Action(order_quantities=(0, 0))
