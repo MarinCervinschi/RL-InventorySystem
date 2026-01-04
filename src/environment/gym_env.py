@@ -6,13 +6,8 @@ from gymnasium import spaces
 
 from src.mdp.action import ActionSpace
 from src.mdp.reward import CostParameters, RewardFunction
-from src.mdp.state import (
-    State,
-    StateHistory,
-    StateSpace,
-    create_initial_history,
-    update_history,
-)
+from src.mdp.state import (State, StateHistory, StateSpace,
+                           create_initial_history, update_history)
 from src.simulation import InventorySimulation
 
 
