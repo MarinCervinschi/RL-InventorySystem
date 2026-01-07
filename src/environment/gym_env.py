@@ -5,9 +5,14 @@ import numpy as np
 from gymnasium import spaces
 
 from src.mdp.action import ActionSpace
-from src.mdp.reward import CostParameters, RewardFunction
-from src.mdp.state import (State, StateHistory, StateSpace,
-                           create_initial_history, update_history)
+from src.mdp.reward import RewardFunction
+from src.mdp.state import (
+    State,
+    StateHistory,
+    StateSpace,
+    create_initial_history,
+    update_history,
+)
 from src.simulation import InventorySimulation
 
 
@@ -55,7 +60,7 @@ class InventoryEnvironment(gym.Env):
         # MDP components
         self.state_space_config = StateSpace(k=k)
         self.action_space_config = ActionSpace(Q_max=Q_max)
-        self.reward_function = RewardFunction(CostParameters())
+        self.reward_function = RewardFunction()
 
         # Simulation
         self.simulation = InventorySimulation(random_state=self.np_random)
@@ -96,14 +101,8 @@ class InventoryEnvironment(gym.Env):
             self.np_random = np.random.default_rng(seed)
             self.simulation = InventorySimulation(random_state=self.np_random)
 
-        # Create initial state history (same state repeated k+1 times)
-        initial_net_inv_0 = 50
-        initial_net_inv_1 = 50
-        self.state_history = create_initial_history(
-            net_inventory_0=initial_net_inv_0,
-            net_inventory_1=initial_net_inv_1,
-            k=self.k,
-        )
+        # Create initial state history (start empty)
+        self.state_history = create_initial_history(k=self.k)
 
         # Reset simulation
         self.simulation.reset(self.state_history.current_state)

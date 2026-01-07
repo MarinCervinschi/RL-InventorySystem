@@ -215,8 +215,8 @@ class StateSpace:
 
 
 def create_state(
-    net_inventory_0: int,
-    net_inventory_1: int,
+    net_inventory_0: int = 0,
+    net_inventory_1: int = 0,
     outstanding_0: int = 0,
     outstanding_1: int = 0,
 ) -> State:
@@ -239,7 +239,7 @@ def create_state(
 
 
 def create_initial_history(
-    net_inventory_0: int = 50, net_inventory_1: int = 50, k: int = 3
+    net_inventory_0: int = 0, net_inventory_1: int = 0, k: int = 3
 ) -> StateHistory:
     """
     Create an initial state history with the same state repeated.

@@ -57,7 +57,7 @@ class InventorySimulation:
         # Current day counter
         self.current_day = 0
 
-    def reset(self, initial_state: State):
+    def reset(self, initial_state: Optional[State] = None) -> None:
         """
         Reset simulation to initial state.
 
@@ -67,9 +67,15 @@ class InventorySimulation:
         # Create new SimPy environment
         self.env = simpy.Environment()
 
+        if initial_state is None:
+            initial_state = create_state()
+
         # Reset warehouse state
         for i in range(self.num_products):
             self.warehouse.set_inventory(i, initial_state.net_inventory[i])
+            self.warehouse.set_outstanding_orders(
+                i, initial_state.outstanding_orders[i]
+            )
 
         # Initialize supplier manager (needs env)
         self.supplier_manager = SupplierManager(
