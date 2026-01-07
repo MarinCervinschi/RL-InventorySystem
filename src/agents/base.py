@@ -7,7 +7,7 @@ import numpy as np
 
 class Agent(ABC):
     """
-    Abstract base class for reinforcement learning agents.
+    Abstract base class for reinforcement learning agents using Stable-Baselines3.
 
     All concrete agents (DQN, PPO, A2C, etc.) must implement this interface.
     """
@@ -16,9 +16,6 @@ class Agent(ABC):
         self,
         observation_space: Any,
         action_space: Any,
-        learning_rate: float = 3e-4,
-        gamma: float = 0.99,
-        device: str = "cpu",
         seed: Optional[int] = None,
     ):
         """
@@ -27,16 +24,11 @@ class Agent(ABC):
         Args:
             observation_space: Gymnasium observation space
             action_space: Gymnasium action space
-            learning_rate: Learning rate for optimizer
-            gamma: Discount factor
-            device: Device for training ('cpu' or 'cuda')
             seed: Random seed for reproducibility
         """
+        
         self.observation_space = observation_space
         self.action_space = action_space
-        self.learning_rate = learning_rate
-        self.gamma = gamma
-        self.device = device
         self.seed = seed
 
         # Training statistics
@@ -63,43 +55,29 @@ class Agent(ABC):
         self, observation: np.ndarray, deterministic: bool = False
     ) -> int:
         """
-        Select an action given an observation.
+        Select an action given an observation (Inference).
 
         Args:
             observation: Current observation from environment
             deterministic: If True, select best action (no exploration)
-                          If False, sample from policy (exploration)
+                           If False, sample from policy (exploration)
 
         Returns:
             Action index to execute
         """
         pass
-
+    
     @abstractmethod
-    def train_step(
-        self,
-        observation: np.ndarray,
-        action: int,
-        reward: float,
-        next_observation: np.ndarray,
-        terminated: bool,
-        truncated: bool,
-    ) -> Dict[str, float]:
+    def train(self, total_timesteps: int, **kwargs) -> Any:
         """
-        Perform one training step (learn from experience).
+        Train the agent.
 
         Args:
-            observation: Current observation
-            action: Action taken
-            reward: Reward received
-            next_observation: Next observation
-            terminated: Whether episode ended naturally
-            truncated: Whether episode was truncated (time limit)
-
-        Returns:
-            Dictionary of training metrics (loss, etc.)
+            total_timesteps: The total number of samples (env steps) to train on
+            **kwargs: Additional arguments for the training loop
         """
         pass
+
 
     @abstractmethod
     def save(self, path: Path):
@@ -120,16 +98,7 @@ class Agent(ABC):
             path: Path to saved model directory or file
         """
         pass
-
-    def reset_episode(self):
-        """
-        Reset internal state at the beginning of a new episode.
-
-        Override this if your agent maintains episode-specific state
-        (e.g., episodic memory, hidden states for RNNs).
-        """
-        pass
-
+    
     def get_stats(self) -> Dict[str, Any]:
         """
         Get current training statistics.
@@ -145,8 +114,5 @@ class Agent(ABC):
     def __repr__(self) -> str:
         """String representation of agent."""
         return (
-            f"{self.__class__.__name__}("
-            f"lr={self.learning_rate}, "
-            f"gamma={self.gamma}, "
-            f"device={self.device})"
+            f"{self.__class__.__name__}(seed={self.seed})"
         )
