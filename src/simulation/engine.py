@@ -62,7 +62,7 @@ class InventorySimulation:
         Reset simulation to initial state.
 
         Args:
-            initial_state: Starting state
+            initial_state: Initial state (defaults to zero inventory and orders)
         """
         # Create new SimPy environment
         self.env = simpy.Environment()
