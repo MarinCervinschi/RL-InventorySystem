@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 from stable_baselines3 import DQN
-from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
-from stable_baselines3.common.vec_env import VecNormalize
+from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.monitor import Monitor
 
 from src.environment import InventoryEnvironment
 from src.agents.base import Agent
 
+MaybeCallback = Union[None, list[BaseCallback], BaseCallback]
 
 class DQNAgent(Agent):
     """
@@ -129,19 +129,21 @@ class DQNAgent(Agent):
         action, _ = self.model.predict(observation, deterministic=deterministic)
         return int(action)
 
-    def train(self, total_timesteps: int, progress_bar: bool = True) -> None:
+    def train(self, total_timesteps: int, callbacks: MaybeCallback = None, progress_bar: bool = True) -> None:
         """
         Train the agent.
 
         Args:
             total_timesteps: Total training steps
             progress_bar: Show training progress
+            callback: Un callback singolo, una lista di callback, o None.
         """
 
         # Train
         self.model.learn(
             total_timesteps=total_timesteps,
             progress_bar=progress_bar,
+            callback=callbacks
         )
 
         self.total_steps = total_timesteps
