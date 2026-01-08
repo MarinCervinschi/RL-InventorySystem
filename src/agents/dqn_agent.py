@@ -119,7 +119,11 @@ class DQNAgent(Agent):
     def select_action(self, observation: np.ndarray, deterministic: bool = False) -> int:
         """Select action using learned policy."""
         action, _ = self.model.predict(observation, deterministic=deterministic)
-        return int(action[0]) if hasattr(action, '__len__') else int(action)
+        # Handle both vectorized and non-vectorized environments
+        if isinstance(action, np.ndarray) and action.ndim > 0:
+            return int(action[0])
+        else:
+            return int(action)
     
     def train(
         self,
