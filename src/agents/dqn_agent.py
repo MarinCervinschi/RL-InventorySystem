@@ -8,6 +8,7 @@ import numpy as np
 from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.vec_env import VecNormalize
+from stable_baselines3.common.monitor import Monitor
 
 from src.environment import InventoryEnvironment
 from src.agents.base import Agent
@@ -27,7 +28,7 @@ class DQNAgent(Agent):
 
     def __init__(
         self,
-        env: InventoryEnvironment,
+        env: Monitor | InventoryEnvironment,
         learning_rate: float = 1e-4,
         gamma: float = 0.99,
         buffer_size: int = 100_000,
