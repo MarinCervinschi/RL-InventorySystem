@@ -34,7 +34,6 @@ class InventoryEnvironment(gym.Env):
         k: int = 3,
         Q_max: int = 20,
         episode_length: int = 100,
-        gamma: float = 0.99,
         random_seed: Optional[int] = None,
     ):
         """
@@ -44,7 +43,6 @@ class InventoryEnvironment(gym.Env):
             k: Number of historical frames to stack (default: 3)
             Q_max: Maximum order quantity per product (default: 20)
             episode_length: Steps per episode (default: 100)
-            gamma: Discount factor (default: 0.99)
             system_params: Simulation parameters
             cost_params: Cost parameters
             random_seed: Random seed for reproducibility
@@ -52,7 +50,6 @@ class InventoryEnvironment(gym.Env):
         self.k = k
         self.Q_max = Q_max
         self.episode_length = episode_length
-        self.gamma = gamma
 
         # Initialize RNG
         self.np_random = np.random.default_rng(random_seed)
