@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -130,88 +130,6 @@ class StateHistory:
     def get_inventory_position(self, product_id: int) -> int:
         """Get current inventory position for a product."""
         return self.current_state.get_inventory_position(product_id)
-
-
-class StateSpace:
-    """
-    Configuration for the state space (Observation space).
-
-    Design Note: State = Observation.
-    The 'k' parameter is for frame stacking (POMDP tool), not part of
-    the fundamental state definition.
-
-    Defines bounds, normalization parameters, and utility functions.
-    """
-
-    def __init__(
-        self,
-        k: int = 3,
-        net_inventory_min: int = -100,
-        net_inventory_max: int = 200,
-        max_outstanding: int = 150,
-    ):
-        """
-        Initialize state space configuration.
-
-        Args:
-            k: Number of historical frames to stack (default: 3)
-            net_inventory_min: Minimum net inventory (backorder limit)
-            net_inventory_max: Maximum net inventory (on-hand limit)
-            max_outstanding: Maximum outstanding orders
-        """
-        self.k = k
-        self.net_inventory_min = net_inventory_min
-        self.net_inventory_max = net_inventory_max
-        self.max_outstanding = max_outstanding
-
-        # State dimension: (k+1) observations × 4 features per observation
-        self.dim = (k + 1) * 4
-
-    @property
-    def shape(self) -> Tuple[int]:
-        """Get shape of state space."""
-        return (self.dim,)
-
-    def is_valid_state(self, state: State) -> bool:
-        """Check if state is within bounds."""
-        for net_inv, outstanding in zip(state.net_inventory, state.outstanding_orders):
-            if net_inv < self.net_inventory_min or net_inv > self.net_inventory_max:
-                return False
-            if outstanding < 0 or outstanding > self.max_outstanding:
-                return False
-        return True
-
-    def is_valid_history(self, history: StateHistory) -> bool:
-        """Check if state history is valid."""
-        if len(history.states) != self.k + 1:
-            return False
-        return all(self.is_valid_state(state) for state in history.states)
-
-    def sample_state(self, random_state: Optional[np.random.Generator] = None) -> State:
-        """Sample a random valid state."""
-        if random_state is None:
-            random_state = np.random.default_rng()
-
-        net_inv_0 = random_state.integers(
-            self.net_inventory_min, self.net_inventory_max + 1
-        )
-        net_inv_1 = random_state.integers(
-            self.net_inventory_min, self.net_inventory_max + 1
-        )
-        out_0 = random_state.integers(0, self.max_outstanding + 1)
-        out_1 = random_state.integers(0, self.max_outstanding + 1)
-
-        return State(
-            net_inventory=(int(net_inv_0), int(net_inv_1)),
-            outstanding_orders=(int(out_0), int(out_1)),
-        )
-
-    def sample_history(
-        self, random_state: Optional[np.random.Generator] = None
-    ) -> StateHistory:
-        """Sample a random state history (for testing/debugging)."""
-        states = tuple(self.sample_state(random_state) for _ in range(self.k + 1))
-        return StateHistory(states=states)
 
 
 def create_state(

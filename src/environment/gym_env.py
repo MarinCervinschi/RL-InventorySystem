@@ -9,7 +9,6 @@ from src.mdp.reward import RewardFunction
 from src.mdp.state import (
     State,
     StateHistory,
-    StateSpace,
     create_initial_history,
     update_history,
 )
@@ -55,7 +54,6 @@ class InventoryEnvironment(gym.Env):
         self.np_random = np.random.default_rng(random_seed)
 
         # MDP components
-        self.state_space_config = StateSpace(k=k)
         self.action_space_config = ActionSpace(Q_max=Q_max)
         self.reward_function = RewardFunction()
 
