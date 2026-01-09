@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
+from stable_baselines3.common.callbacks import BaseCallback
 
 import numpy as np
 
+MaybeCallback = Union[None, list[BaseCallback], BaseCallback]
 
 class Agent(ABC):
     """
@@ -68,7 +70,7 @@ class Agent(ABC):
         pass
     
     @abstractmethod
-    def train(self, total_timesteps: int, **kwargs) -> Any:
+    def train(self, total_timesteps: int, callbacks: MaybeCallback = None,**kwargs) -> Any:
         """
         Train the agent.
 
