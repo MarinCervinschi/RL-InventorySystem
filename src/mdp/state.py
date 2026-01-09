@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -156,8 +156,44 @@ def create_state(
     )
 
 
+def sample_initial_state(
+    steady_state: Tuple[int, int] = (11, 13),
+    randomness: int = 5,
+    seed: Optional[int] = None,
+) -> State:
+    """
+    Sample initial state with random perturbation around steady state.
+
+    Args:
+        steady_state: steady state [I0, I1]
+        randomness: Maximum random deviation (±randomness)
+        seed: Random seed for reproducibility
+
+    Returns:
+        Perturbed initial state
+    """
+    rng = np.random.default_rng(seed)
+
+    I0, I1 = steady_state
+
+    # Add random perturbation
+    I0_new = int(I0 + rng.integers(-randomness, randomness + 1))
+    I1_new = int(I1 + rng.integers(-randomness, randomness + 1))
+
+    return create_state(
+        net_inventory_0=I0_new,
+        net_inventory_1=I1_new,
+        outstanding_0=0,
+        outstanding_1=0,
+    )
+
+
 def create_initial_history(
-    net_inventory_0: int = 0, net_inventory_1: int = 0, k: int = 3
+    net_inventory_1: int = 0,
+    net_inventory_0: int = 0,
+    k: int = 42,
+    sample: bool = True,
+    seed: Optional[int] = None,
 ) -> StateHistory:
     """
     Create an initial state history with the same state repeated.
@@ -168,11 +204,17 @@ def create_initial_history(
         net_inventory_0: Initial net inventory for product 0
         net_inventory_1: Initial net inventory for product 1
         k: Number of historical frames
+        sample: Whether to sample initial state with randomness
+        seed: Random seed for reproducibility
 
     Returns:
         StateHistory with repeated initial state
     """
-    initial_state = create_state(net_inventory_0, net_inventory_1, 0, 0)
+    if sample:
+        initial_state = sample_initial_state(seed=seed)
+    else:
+        initial_state = create_state(net_inventory_0, net_inventory_1, 0, 0)
+
     states = tuple(initial_state for _ in range(k + 1))
     return StateHistory(states=states)
 

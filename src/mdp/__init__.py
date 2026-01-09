@@ -5,6 +5,7 @@ from src.mdp.state import (
     StateHistory,
     create_initial_history,
     create_state,
+    sample_initial_state,
     update_history,
 )
 
@@ -14,6 +15,7 @@ __all__ = [
     "StateHistory",  # POMDP frame stacking tool
     "create_state",
     "create_initial_history",
+    "sample_initial_state",
     "update_history",
     # Action
     "Action",
