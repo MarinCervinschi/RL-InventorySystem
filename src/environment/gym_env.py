@@ -22,7 +22,7 @@ class InventoryEnvironment(gym.Env):
     State Representation: State (single timestep)
     POMDP Solution: Frame stacking via StateHistory
 
-    Observation Space: Continuous Box((k+1)*4,) - stacked states
+    Observation Space: Continuous Box((k+1)*num_products*2,) - stacked states
     Action Space: Discrete(n) where n = (Q_max + 1)²
 
     Reward: Negative cost (minimize cost = maximize reward)
@@ -30,20 +30,18 @@ class InventoryEnvironment(gym.Env):
 
     def __init__(
         self,
-        k: int = 3,
-        Q_max: int = 20,
-        episode_length: int = 100,
+        k: int = 32,
+        Q_max: int = 42,
+        episode_length: int = 365,
         random_seed: Optional[int] = None,
     ):
         """
         Initialize environment.
 
         Args:
-            k: Number of historical frames to stack (default: 3)
-            Q_max: Maximum order quantity per product (default: 20)
-            episode_length: Steps per episode (default: 100)
-            system_params: Simulation parameters
-            cost_params: Cost parameters
+            k: Number of historical frames to stack (default: 32)
+            Q_max: Maximum order quantity per product (default: 42)
+            episode_length: Steps per episode (default: 365)
             random_seed: Random seed for reproducibility
         """
         self.k = k
@@ -66,7 +64,9 @@ class InventoryEnvironment(gym.Env):
 
         # Gymnasium spaces
         # Observation space: continuous (for neural networks)
-        obs_dim = (k + 1) * 4
+        obs_dim = (
+            (k + 1) * self.simulation.num_products * 2
+        )  # net_inventory + outstanding_orders
         self.observation_space: spaces.Box = spaces.Box(
             low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32
         )
@@ -96,7 +96,7 @@ class InventoryEnvironment(gym.Env):
             self.np_random = np.random.default_rng(seed)
             self.simulation = InventorySimulation(random_state=self.np_random)
 
-        # Create initial state history (start empty)
+        # Create initial state history (with sampling)
         self.state_history = create_initial_history(k=self.k)
 
         # Reset simulation

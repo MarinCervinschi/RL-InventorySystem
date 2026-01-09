@@ -191,7 +191,7 @@ def sample_initial_state(
 def create_initial_history(
     net_inventory_1: int = 0,
     net_inventory_0: int = 0,
-    k: int = 42,
+    k: int = 32,
     sample: bool = True,
     seed: Optional[int] = None,
 ) -> StateHistory:
