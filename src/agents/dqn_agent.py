@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.monitor import Monitor
 
 from src.agents.base import Agent
 from src.environment import InventoryEnvironment
@@ -29,7 +28,7 @@ class DQNAgent(Agent):
 
     def __init__(
         self,
-        env: Monitor | InventoryEnvironment,
+        env: InventoryEnvironment,
         learning_rate: float = 1e-4,
         gamma: float = 0.99,
         buffer_size: int = 100_000,
