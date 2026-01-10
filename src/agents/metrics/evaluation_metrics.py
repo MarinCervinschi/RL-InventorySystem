@@ -70,6 +70,22 @@ class EvaluationMetrics:
         ss_mean = np.mean(ss_data)
         ss_std = np.std(ss_data)
 
+        # Automatic warmup detection: find where curve stays within 5% of steady-state mean
+        threshold = ss_mean * 0.05  # 5% tolerance
+        warmup_detected = None
+
+        for i in range(len(Y_smoothed)):
+            # Check if remaining data stays close to steady-state
+            remaining = Y_smoothed[i:]
+            if len(remaining) >= ss_window_len:
+                if np.all(np.abs(remaining - ss_mean) <= threshold):
+                    warmup_detected = smoothed_days[i]
+                    break
+
+        # If no clear plateau found, use 50% of episode as conservative estimate
+        if warmup_detected is None:
+            warmup_detected = n_days // 2
+
         # Plot
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
@@ -102,6 +118,14 @@ class EvaluationMetrics:
             linewidth=2,
             label=f"Steady-State Mean: ${ss_mean:.2f}",
         )
+        # Mark detected warmup period
+        ax.axvline(
+            x=warmup_detected,
+            color="green",
+            linestyle=":",
+            linewidth=2,
+            label=f"Suggested Warmup: {warmup_detected} days",
+        )
         ax.set_xlabel("Day (Time Step)", fontsize=11)
         ax.set_ylabel("Smoothed Daily Cost ($)", fontsize=11)
         ax.set_title(
@@ -121,20 +145,13 @@ class EvaluationMetrics:
         print(f"📊 Welch's Procedure Summary:")
         print("=" * 60)
         print(f"   Total replications: {n_reps}")
-        print(f"   Episode length:     {n_days} days")
-        print(f"   Moving average window:    {window_size}\n")
+        print(f"\n✅ Suggested Warmup Length: {warmup_detected} days")
+        print(f"   (Detected where curve stays within 5% of steady-state)")
 
-        print("=" * 60)
-        print(f"📈 Results & Convergence:")
-        print("=" * 60)
-        print(f"   Steady-State Mean: ${ss_mean:.2f}")
-        print(f"   Stability (Std Dev):    {ss_std:.2f} (Lower is better/flatter)")
+        print(f"\n💡 Tip: Visually verify the green line on the right plot.")
+        print(f"   Adjust manually if needed based on your domain knowledge.")
 
-        print(
-            f"\n⚠️  Visually inspect the right plot to identify where the curve flattens."
-        )
-
-        return n_days, n_reps
+        return n_days, n_reps, warmup_detected
 
     def plot_cost_breakdown_by_product(
         self,
