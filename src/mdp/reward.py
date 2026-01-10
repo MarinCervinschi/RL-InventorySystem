@@ -38,7 +38,7 @@ class CostComponents:
 
 class RewardFunction:
     """
-    Reward function as specified in the assignment.
+    Reward function:
 
     R(t) = -[C_order(t) + C_holding(t) + C_shortage(t)]
 

@@ -100,6 +100,11 @@ class StateHistory:
     def current_state(self) -> State:
         """Get the most recent state (s_t)."""
         return self.states[0]
+    
+    @property
+    def shape(self) -> Tuple[int]:
+        """Get shape of history array."""
+        return (len(self.states) * 2 * self.num_products,)
 
     def to_array(self) -> NDArray[np.float32]:
         """
@@ -109,11 +114,6 @@ class StateHistory:
             1D array of shape ((k+1) * 2 * num_products,) containing all stacked states
         """
         return np.concatenate([state.to_array() for state in self.states])
-
-    @property
-    def shape(self) -> Tuple[int]:
-        """Get shape of history array."""
-        return (len(self.states) * 2 * self.num_products,)
 
     def get_on_hand_inventory(self, product_id: int) -> int:
         """Get current on-hand inventory for a product."""
