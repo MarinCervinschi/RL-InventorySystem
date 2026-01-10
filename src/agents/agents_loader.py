@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, Optional
 
-from stable_baselines3 import DQN
+from stable_baselines3 import DQN, PPO
 
-from src.agents.dqn_agent import DQNAgent
+from src.agents import DQNAgent, PPOAgent
 from src.environment import InventoryEnvironment
 
 
@@ -31,9 +31,9 @@ class AgentsLoader:
         # Registry of available agent types
         self.agent_types = {
             "dqn": self._load_dqn,
+            "ppo": self._load_ppo,
             # Add more agent types here as you implement them:
             # 'a2c': self._load_a2c,
-            # 'ppo': self._load_ppo,
         }
 
         # Cache loaded agents
@@ -95,6 +95,29 @@ class AgentsLoader:
 
         # Load trained weights
         agent.model = DQN.load(str(model_path), env=self.env)
+
+        return agent
+
+    def _load_ppo(self, model_id: str) -> PPOAgent:
+        """Load PPO agent from disk."""
+        model_path = self.models_dir / f"{model_id}"
+
+        # Check if file exists (with or without .zip extension)
+        if not model_path.exists() and not Path(str(model_path) + ".zip").exists():
+            raise FileNotFoundError(
+                f"Model not found: {model_path}\n"
+                f"Available models in {self.models_dir}:\n"
+                + "\n".join(f"  - {f.stem}" for f in self.models_dir.glob("*.zip"))
+            )
+
+        # Create agent wrapper with environment
+        agent = PPOAgent(
+            env=self.env,
+            verbose=0,
+        )
+
+        # Load trained weights
+        agent.model = PPO.load(str(model_path), env=self.env)
 
         return agent
 
