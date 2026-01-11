@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
+from sympy import Q
 
 from src.agents.base import Agent
 from src.environment import InventoryEnvironment
@@ -154,7 +155,7 @@ class PPOAgent(Agent):
 
         self.total_steps = total_timesteps
 
-    def save(self, path: Optional[Path] = None):
+    def save(self, metadata: Dict, path: Optional[Path] = None):
         """Save model and environment metadata."""
         import json
 
@@ -167,11 +168,6 @@ class PPOAgent(Agent):
         self.model.save(path / "ppo_model")
 
         # Save environment metadata
-        metadata = {
-            "k": self.env.k,
-            "Q_max": self.env.Q_max,
-            "episode_length": self.env.episode_length,
-        }
         metadata_path = path / "ppo_model_metadata.json"
         with open(metadata_path, "w") as f:
             json.dump(metadata, f, indent=2)
