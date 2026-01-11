@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
+TRAINING_SEED = 6163
 
 def generate_seeds(n: int = 5, start_index: int = 0) -> List[int]:
     """
