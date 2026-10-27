@@ -8,7 +8,7 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import BaseCallback
 
 from src.agents.base import Agent
-from src.environment import InventoryEnvironment
+from src.environment import InventoryEnvironment, ProductInventoryEnvironment
 
 MaybeCallback = Union[None, list[BaseCallback], BaseCallback]
 
@@ -27,7 +27,7 @@ class DQNAgent(Agent):
 
     def __init__(
         self,
-        env: InventoryEnvironment,
+        env: Union[InventoryEnvironment, ProductInventoryEnvironment],
         learning_rate: float = 1e-4,
         gamma: float = 0.99,
         buffer_size: int = 100_000,
@@ -47,7 +47,7 @@ class DQNAgent(Agent):
         Initialize DQN Agent.
 
         Args:
-            env: InventoryEnvironment instance
+            env: InventoryEnvironment or ProductInventoryEnvironment instance
             learning_rate: Learning rate [1e-5, 1e-3]
             gamma: Discount factor [0.95, 0.999] - high for inventory planning
             buffer_size: Experience replay buffer size
@@ -170,7 +170,8 @@ class DQNAgent(Agent):
             json.dump(metadata, f, indent=2)
 
         print(f"DQN model saved to {path}")
-        print(f"  Metadata: k={metadata['k']}, Q_max={metadata['Q_max']}")
+        if "k" in metadata and "Q_max" in metadata:
+            print(f"  Metadata: k={metadata['k']}, Q_max={metadata['Q_max']}")
 
     def load(self, path: Optional[Path] = None):
         """Load model from disk."""

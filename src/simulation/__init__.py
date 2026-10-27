@@ -7,12 +7,20 @@ from src.simulation.product import (
     create_product_0,
     create_product_1,
 )
+from src.simulation.streams import (
+    PerProductSupplierManager,
+    ServiceTrackingWarehouse,
+    StreamedInventorySimulation,
+)
 from src.simulation.supplier import PendingOrder, SupplierManager
 from src.simulation.warehouse import Warehouse
 
 __all__ = [
     # Core simulation
     "InventorySimulation",
+    "StreamedInventorySimulation",
+    "PerProductSupplierManager",
+    "ServiceTrackingWarehouse",
     # Product domain
     "Product",
     "create_product_0",
