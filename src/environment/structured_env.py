@@ -11,8 +11,10 @@ from src.environment.product_control import (
     SSProductPolicy,
     product_costs,
 )
-from src.mdp import Action, State
+from src.mdp import Action, CostParameters, State
 from src.simulation.streams import StreamedInventorySimulation
+
+_COST_PARAMS = CostParameters()
 
 
 class ProductInventoryEnvironment(gym.Env):
@@ -28,6 +30,9 @@ class ProductInventoryEnvironment(gym.Env):
         [net_inv, outstanding, IP, own orders of the last H days] / obs_scale
     Action: Discrete(len(levels) + 1), 0 = no order, a -> order up to levels[a-1]
     Reward: -(K·1{q>0} + i·q + h·I⁺ + π·I⁻) of the controlled product × reward_scale
+        (without i·q when `purchase_cost_in_reward=False`: in steady state every
+        demanded unit is bought once, so i·q only adds a constant on average,
+        while per step it penalises ordering long before the benefit arrives)
 
     `info` exposes the unscaled cost of the controlled product, of the partner
     and the total.
@@ -39,6 +44,7 @@ class ProductInventoryEnvironment(gym.Env):
         partner: Optional[ProductPolicy] = None,
         spec: Optional[ProductControlSpec] = None,
         reward_scale: float = 1.0 / 20.0,
+        purchase_cost_in_reward: bool = True,
         episode_length: int = 1000,
         random_seed: Optional[int] = None,
     ):
@@ -50,6 +56,8 @@ class ProductInventoryEnvironment(gym.Env):
             partner: Policy for the other product (default: baseline (s,S))
             spec: Observation/action encoding (default: `ProductControlSpec.for_product`)
             reward_scale: Multiplier applied to the negative cost
+            purchase_cost_in_reward: Include the unit cost i·q in the reward
+                (`info` always reports the full cost)
             episode_length: Steps per episode (default: 1000)
             random_seed: Seed of the first episode (later resets continue
                 from an internal seed sequence unless a seed is passed)
@@ -67,6 +75,7 @@ class ProductInventoryEnvironment(gym.Env):
             raise ValueError("partner must control the other product")
 
         self.reward_scale = reward_scale
+        self.purchase_cost_in_reward = purchase_cost_in_reward
         self.episode_length = episode_length
 
         # Episode seeds are drawn from self.np_random (seeded on first reset)
@@ -155,7 +164,10 @@ class ProductInventoryEnvironment(gym.Env):
         own = product_costs(next_state, self.product_id, q_own)
         partner = product_costs(next_state, self.partner_id, q_partner)
         cost = own.total_cost
-        reward = -cost * self.reward_scale
+        reward_cost = cost
+        if not self.purchase_cost_in_reward:
+            reward_cost -= _COST_PARAMS.i * q_own
+        reward = -reward_cost * self.reward_scale
 
         self.current_step += 1
         self.episode_costs.append(cost)

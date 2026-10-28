@@ -11,11 +11,23 @@ from typing import Any, Deque, Dict, Optional, Tuple
 import numpy as np
 from numpy.typing import NDArray
 
-from src.mdp import Action, CostComponents, RewardFunction, State
+from src.mdp import (
+    Action,
+    ActionSpace,
+    CostComponents,
+    RewardFunction,
+    State,
+    StateHistory,
+    update_history,
+)
 from src.simulation.product import Product, create_default_products
 
 # (s,S) parameters from the baseline grid search (notebooks/baseline.ipynb)
 BASELINE_SS_PARAMS: Tuple[Tuple[int, int], ...] = ((20, 38), (19, 37))
+
+# (s,S) re-tuned per product with common random numbers on the streamed
+# simulator (scripts/tune_ss_policy.py, results/ss_grid_search_*.json)
+TUNED_SS_PARAMS: Tuple[Tuple[int, int], ...] = ((25, 30), (23, 29))
 
 
 def default_history_length(product: Product) -> int:
@@ -202,6 +214,12 @@ class SSProductPolicy(ProductPolicy):
         s, S = BASELINE_SS_PARAMS[product_id]
         return cls(product_id=product_id, s=s, S=S)
 
+    @classmethod
+    def tuned(cls, product_id: int) -> "SSProductPolicy":
+        """(s,S) re-tuned with common random numbers (`TUNED_SS_PARAMS`)."""
+        s, S = TUNED_SS_PARAMS[product_id]
+        return cls(product_id=product_id, s=s, S=S)
+
 
 @dataclass
 class ModelProductPolicy(ProductPolicy):
@@ -255,3 +273,65 @@ class ModelProductPolicy(ProductPolicy):
         spec = ProductControlSpec.from_dict(metadata["spec"])
         model = DQN.load(path / "dqn_model", device="cpu")
         return cls(model=model, spec=spec, label=label)
+
+
+class FrameStackJointPolicy:
+    """
+    Adapter for agents trained on the original `InventoryEnvironment`.
+
+    Rebuilds the stacked observation exactly as the original environment
+    (initial state repeated k+1 times, then one frame per day) and decodes the
+    joint action. The two per-product views returned by `as_product_policies`
+    let the agent run in the joint evaluation with common random numbers.
+    Product 0 is queried first each day (as in `run_joint_episode`), which
+    triggers the joint decision; product 1 returns the cached quantity.
+    """
+
+    def __init__(self, model: Any, k: int, Q_max: int, deterministic: bool = True):
+        self.model = model
+        self.k = k
+        self.action_space = ActionSpace(Q_max=Q_max)
+        self.deterministic = deterministic
+        self._history: Optional[StateHistory] = None
+        self._quantities: Tuple[int, ...] = (0, 0)
+
+    def reset(self) -> None:
+        self._history = None
+
+    def decide(self, state: State) -> Tuple[int, ...]:
+        if self._history is None:
+            self._history = StateHistory(states=tuple(state for _ in range(self.k + 1)))
+        else:
+            self._history = update_history(self._history, state)
+        action, _ = self.model.predict(
+            self._history.to_array(), deterministic=self.deterministic
+        )
+        self._quantities = self.action_space.get_action(int(action)).order_quantities
+        return self._quantities
+
+    def as_product_policies(
+        self, label: str = "Joint DQN"
+    ) -> Tuple["ProductPolicy", "ProductPolicy"]:
+        return (_JointView(self, 0, label), _JointView(self, 1, label))
+
+
+@dataclass
+class _JointView(ProductPolicy):
+    """Per-product view of a `FrameStackJointPolicy`."""
+
+    joint: FrameStackJointPolicy
+    product_id: int
+    label: str
+
+    def reset(self) -> None:
+        if self.product_id == 0:
+            self.joint.reset()
+
+    def act(self, state: State) -> int:
+        if self.product_id == 0:
+            self.joint.decide(state)
+        return int(self.joint._quantities[self.product_id])
+
+    @property
+    def name(self) -> str:
+        return self.label

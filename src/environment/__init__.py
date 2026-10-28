@@ -1,11 +1,13 @@
 from .gym_env import InventoryEnvironment
 from .product_control import (
     BASELINE_SS_PARAMS,
+    FrameStackJointPolicy,
     ModelProductPolicy,
     OrderHistory,
     ProductControlSpec,
     ProductPolicy,
     SSProductPolicy,
+    TUNED_SS_PARAMS,
     product_costs,
 )
 from .structured_env import ProductInventoryEnvironment
@@ -20,5 +22,7 @@ __all__ = [
     "SSProductPolicy",
     "ModelProductPolicy",
     "BASELINE_SS_PARAMS",
+    "TUNED_SS_PARAMS",
+    "FrameStackJointPolicy",
     "product_costs",
 ]

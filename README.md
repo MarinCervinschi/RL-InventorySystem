@@ -102,6 +102,7 @@ That's it! `uv sync` creates a virtual environment and installs everything you n
 - **[Assignment Specification](docs/assigment.md)** - Original problem statement
 - **[MDP Formulation](docs/mdp.md)** - Complete mathematical formulation
 - **[Implementation Tips](docs/tips.md)** - Development guidelines
+- **[Experiment Log](docs/experiments/README.md)** - Per-product DQN vs (s,S): procedure, results, reproduction
 
 ## 🔬 Experiments & Notebooks
 

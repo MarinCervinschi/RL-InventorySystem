@@ -1,0 +1,1056 @@
+{
+ "dqn_p0_ab_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 26.972
+  },
+  {
+   "timesteps": 100000,
+   "cost": 36.734
+  },
+  {
+   "timesteps": 150000,
+   "cost": 75.047
+  },
+  {
+   "timesteps": 200000,
+   "cost": 76.299
+  },
+  {
+   "timesteps": 250000,
+   "cost": 39.516
+  },
+  {
+   "timesteps": 300000,
+   "cost": 42.462
+  },
+  {
+   "timesteps": 350000,
+   "cost": 38.204
+  },
+  {
+   "timesteps": 400000,
+   "cost": 41.532
+  },
+  {
+   "timesteps": 450000,
+   "cost": 37.013
+  },
+  {
+   "timesteps": 500000,
+   "cost": 38.631
+  },
+  {
+   "timesteps": 550000,
+   "cost": 38.442
+  },
+  {
+   "timesteps": 600000,
+   "cost": 35.652
+  },
+  {
+   "timesteps": 650000,
+   "cost": 39.766
+  },
+  {
+   "timesteps": 700000,
+   "cost": 41.239
+  },
+  {
+   "timesteps": 750000,
+   "cost": 40.394
+  },
+  {
+   "timesteps": 800000,
+   "cost": 38.035
+  },
+  {
+   "timesteps": 850000,
+   "cost": 43.781
+  },
+  {
+   "timesteps": 900000,
+   "cost": 40.105
+  },
+  {
+   "timesteps": 950000,
+   "cost": 39.22
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 40.726
+  }
+ ],
+ "dqn_p0_lr3e-5_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 91.507
+  },
+  {
+   "timesteps": 100000,
+   "cost": 21.929
+  },
+  {
+   "timesteps": 150000,
+   "cost": 69.017
+  },
+  {
+   "timesteps": 200000,
+   "cost": 45.267
+  },
+  {
+   "timesteps": 250000,
+   "cost": 94.346
+  },
+  {
+   "timesteps": 300000,
+   "cost": 45.604
+  },
+  {
+   "timesteps": 350000,
+   "cost": 41.207
+  },
+  {
+   "timesteps": 400000,
+   "cost": 38.853
+  },
+  {
+   "timesteps": 450000,
+   "cost": 38.828
+  },
+  {
+   "timesteps": 500000,
+   "cost": 38.072
+  },
+  {
+   "timesteps": 550000,
+   "cost": 39.596
+  },
+  {
+   "timesteps": 600000,
+   "cost": 34.072
+  },
+  {
+   "timesteps": 650000,
+   "cost": 36.161
+  },
+  {
+   "timesteps": 700000,
+   "cost": 38.876
+  },
+  {
+   "timesteps": 750000,
+   "cost": 43.733
+  },
+  {
+   "timesteps": 800000,
+   "cost": 41.082
+  },
+  {
+   "timesteps": 850000,
+   "cost": 41.802
+  },
+  {
+   "timesteps": 900000,
+   "cost": 38.485
+  },
+  {
+   "timesteps": 950000,
+   "cost": 39.014
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 40.283
+  }
+ ],
+ "dqn_p0_rs100_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 31.03
+  },
+  {
+   "timesteps": 100000,
+   "cost": 45.134
+  },
+  {
+   "timesteps": 150000,
+   "cost": 42.48
+  },
+  {
+   "timesteps": 200000,
+   "cost": 40.216
+  },
+  {
+   "timesteps": 250000,
+   "cost": 23.338
+  },
+  {
+   "timesteps": 300000,
+   "cost": 21.02
+  },
+  {
+   "timesteps": 350000,
+   "cost": 20.164
+  },
+  {
+   "timesteps": 400000,
+   "cost": 17.817
+  },
+  {
+   "timesteps": 450000,
+   "cost": 23.748
+  },
+  {
+   "timesteps": 500000,
+   "cost": 18.003
+  },
+  {
+   "timesteps": 550000,
+   "cost": 26.817
+  },
+  {
+   "timesteps": 600000,
+   "cost": 18.667
+  },
+  {
+   "timesteps": 650000,
+   "cost": 24.262
+  },
+  {
+   "timesteps": 700000,
+   "cost": 18.17
+  },
+  {
+   "timesteps": 750000,
+   "cost": 18.806
+  },
+  {
+   "timesteps": 800000,
+   "cost": 20.593
+  },
+  {
+   "timesteps": 850000,
+   "cost": 25.442
+  },
+  {
+   "timesteps": 900000,
+   "cost": 18.498
+  },
+  {
+   "timesteps": 950000,
+   "cost": 17.932
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 21.19
+  }
+ ],
+ "dqn_p0_rs100_noiq_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 26.018
+  },
+  {
+   "timesteps": 100000,
+   "cost": 40.607
+  },
+  {
+   "timesteps": 150000,
+   "cost": 65.047
+  },
+  {
+   "timesteps": 200000,
+   "cost": 28.458
+  },
+  {
+   "timesteps": 250000,
+   "cost": 30.926
+  },
+  {
+   "timesteps": 300000,
+   "cost": 21.126
+  },
+  {
+   "timesteps": 350000,
+   "cost": 18.895
+  },
+  {
+   "timesteps": 400000,
+   "cost": 21.749
+  },
+  {
+   "timesteps": 450000,
+   "cost": 23.617
+  },
+  {
+   "timesteps": 500000,
+   "cost": 22.215
+  },
+  {
+   "timesteps": 550000,
+   "cost": 18.559
+  },
+  {
+   "timesteps": 600000,
+   "cost": 23.449
+  },
+  {
+   "timesteps": 650000,
+   "cost": 20.6
+  },
+  {
+   "timesteps": 700000,
+   "cost": 18.776
+  },
+  {
+   "timesteps": 750000,
+   "cost": 21.693
+  },
+  {
+   "timesteps": 800000,
+   "cost": 23.398
+  },
+  {
+   "timesteps": 850000,
+   "cost": 19.287
+  },
+  {
+   "timesteps": 900000,
+   "cost": 20.2
+  },
+  {
+   "timesteps": 950000,
+   "cost": 19.008
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 18.802
+  }
+ ],
+ "dqn_p0_rs100_noiq_s1234_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 24.677
+  },
+  {
+   "timesteps": 100000,
+   "cost": 50.45
+  },
+  {
+   "timesteps": 150000,
+   "cost": 84.375
+  },
+  {
+   "timesteps": 200000,
+   "cost": 26.01
+  },
+  {
+   "timesteps": 250000,
+   "cost": 24.441
+  },
+  {
+   "timesteps": 300000,
+   "cost": 19.221
+  },
+  {
+   "timesteps": 350000,
+   "cost": 18.739
+  },
+  {
+   "timesteps": 400000,
+   "cost": 21.474
+  },
+  {
+   "timesteps": 450000,
+   "cost": 18.735
+  },
+  {
+   "timesteps": 500000,
+   "cost": 20.89
+  },
+  {
+   "timesteps": 550000,
+   "cost": 18.928
+  },
+  {
+   "timesteps": 600000,
+   "cost": 22.712
+  },
+  {
+   "timesteps": 650000,
+   "cost": 19.697
+  },
+  {
+   "timesteps": 700000,
+   "cost": 19.201
+  },
+  {
+   "timesteps": 750000,
+   "cost": 18.88
+  },
+  {
+   "timesteps": 800000,
+   "cost": 19.661
+  },
+  {
+   "timesteps": 850000,
+   "cost": 19.452
+  },
+  {
+   "timesteps": 900000,
+   "cost": 20.048
+  },
+  {
+   "timesteps": 950000,
+   "cost": 18.98
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 18.721
+  }
+ ],
+ "dqn_p0_rs100_s1234_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 33.604
+  },
+  {
+   "timesteps": 100000,
+   "cost": 127.708
+  },
+  {
+   "timesteps": 150000,
+   "cost": 108.41
+  },
+  {
+   "timesteps": 200000,
+   "cost": 34.813
+  },
+  {
+   "timesteps": 250000,
+   "cost": 19.377
+  },
+  {
+   "timesteps": 300000,
+   "cost": 19.401
+  },
+  {
+   "timesteps": 350000,
+   "cost": 35.869
+  },
+  {
+   "timesteps": 400000,
+   "cost": 20.773
+  },
+  {
+   "timesteps": 450000,
+   "cost": 25.166
+  },
+  {
+   "timesteps": 500000,
+   "cost": 24.535
+  },
+  {
+   "timesteps": 550000,
+   "cost": 41.998
+  },
+  {
+   "timesteps": 600000,
+   "cost": 23.045
+  },
+  {
+   "timesteps": 650000,
+   "cost": 23.39
+  },
+  {
+   "timesteps": 700000,
+   "cost": 21.569
+  },
+  {
+   "timesteps": 750000,
+   "cost": 24.133
+  },
+  {
+   "timesteps": 800000,
+   "cost": 23.915
+  },
+  {
+   "timesteps": 850000,
+   "cost": 20.59
+  },
+  {
+   "timesteps": 900000,
+   "cost": 22.793
+  },
+  {
+   "timesteps": 950000,
+   "cost": 25.705
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 22.403
+  }
+ ],
+ "dqn_p1_ab_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 65.816
+  },
+  {
+   "timesteps": 100000,
+   "cost": 85.19
+  },
+  {
+   "timesteps": 150000,
+   "cost": 89.809
+  },
+  {
+   "timesteps": 200000,
+   "cost": 36.032
+  },
+  {
+   "timesteps": 250000,
+   "cost": 34.191
+  },
+  {
+   "timesteps": 300000,
+   "cost": 38.87
+  },
+  {
+   "timesteps": 350000,
+   "cost": 36.966
+  },
+  {
+   "timesteps": 400000,
+   "cost": 32.583
+  },
+  {
+   "timesteps": 450000,
+   "cost": 34.16
+  },
+  {
+   "timesteps": 500000,
+   "cost": 32.936
+  },
+  {
+   "timesteps": 550000,
+   "cost": 40.646
+  },
+  {
+   "timesteps": 600000,
+   "cost": 37.977
+  },
+  {
+   "timesteps": 650000,
+   "cost": 34.166
+  },
+  {
+   "timesteps": 700000,
+   "cost": 36.169
+  },
+  {
+   "timesteps": 750000,
+   "cost": 37.209
+  },
+  {
+   "timesteps": 800000,
+   "cost": 35.455
+  },
+  {
+   "timesteps": 850000,
+   "cost": 40.177
+  },
+  {
+   "timesteps": 900000,
+   "cost": 34.867
+  },
+  {
+   "timesteps": 950000,
+   "cost": 36.109
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 35.631
+  }
+ ],
+ "dqn_p1_lr3e-5_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 45.77
+  },
+  {
+   "timesteps": 100000,
+   "cost": 41.428
+  },
+  {
+   "timesteps": 150000,
+   "cost": 54.754
+  },
+  {
+   "timesteps": 200000,
+   "cost": 58.142
+  },
+  {
+   "timesteps": 250000,
+   "cost": 51.56
+  },
+  {
+   "timesteps": 300000,
+   "cost": 39.401
+  },
+  {
+   "timesteps": 350000,
+   "cost": 36.724
+  },
+  {
+   "timesteps": 400000,
+   "cost": 39.389
+  },
+  {
+   "timesteps": 450000,
+   "cost": 37.44
+  },
+  {
+   "timesteps": 500000,
+   "cost": 34.329
+  },
+  {
+   "timesteps": 550000,
+   "cost": 36.687
+  },
+  {
+   "timesteps": 600000,
+   "cost": 37.259
+  },
+  {
+   "timesteps": 650000,
+   "cost": 40.245
+  },
+  {
+   "timesteps": 700000,
+   "cost": 38.239
+  },
+  {
+   "timesteps": 750000,
+   "cost": 39.813
+  },
+  {
+   "timesteps": 800000,
+   "cost": 39.229
+  },
+  {
+   "timesteps": 850000,
+   "cost": 36.871
+  },
+  {
+   "timesteps": 900000,
+   "cost": 34.912
+  },
+  {
+   "timesteps": 950000,
+   "cost": 37.785
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 37.287
+  }
+ ],
+ "dqn_p1_rs100_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 50.171
+  },
+  {
+   "timesteps": 100000,
+   "cost": 52.305
+  },
+  {
+   "timesteps": 150000,
+   "cost": 30.965
+  },
+  {
+   "timesteps": 200000,
+   "cost": 21.582
+  },
+  {
+   "timesteps": 250000,
+   "cost": 22.714
+  },
+  {
+   "timesteps": 300000,
+   "cost": 24.395
+  },
+  {
+   "timesteps": 350000,
+   "cost": 22.107
+  },
+  {
+   "timesteps": 400000,
+   "cost": 21.844
+  },
+  {
+   "timesteps": 450000,
+   "cost": 20.606
+  },
+  {
+   "timesteps": 500000,
+   "cost": 24.468
+  },
+  {
+   "timesteps": 550000,
+   "cost": 20.916
+  },
+  {
+   "timesteps": 600000,
+   "cost": 27.839
+  },
+  {
+   "timesteps": 650000,
+   "cost": 26.178
+  },
+  {
+   "timesteps": 700000,
+   "cost": 22.546
+  },
+  {
+   "timesteps": 750000,
+   "cost": 25.065
+  },
+  {
+   "timesteps": 800000,
+   "cost": 22.63
+  },
+  {
+   "timesteps": 850000,
+   "cost": 21.861
+  },
+  {
+   "timesteps": 900000,
+   "cost": 23.153
+  },
+  {
+   "timesteps": 950000,
+   "cost": 22.552
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 21.771
+  }
+ ],
+ "dqn_p1_rs100_noiq_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 27.602
+  },
+  {
+   "timesteps": 100000,
+   "cost": 49.468
+  },
+  {
+   "timesteps": 150000,
+   "cost": 37.187
+  },
+  {
+   "timesteps": 200000,
+   "cost": 21.575
+  },
+  {
+   "timesteps": 250000,
+   "cost": 21.945
+  },
+  {
+   "timesteps": 300000,
+   "cost": 21.635
+  },
+  {
+   "timesteps": 350000,
+   "cost": 28.29
+  },
+  {
+   "timesteps": 400000,
+   "cost": 22.747
+  },
+  {
+   "timesteps": 450000,
+   "cost": 24.697
+  },
+  {
+   "timesteps": 500000,
+   "cost": 22.419
+  },
+  {
+   "timesteps": 550000,
+   "cost": 21.127
+  },
+  {
+   "timesteps": 600000,
+   "cost": 26.052
+  },
+  {
+   "timesteps": 650000,
+   "cost": 21.803
+  },
+  {
+   "timesteps": 700000,
+   "cost": 24.316
+  },
+  {
+   "timesteps": 750000,
+   "cost": 21.932
+  },
+  {
+   "timesteps": 800000,
+   "cost": 21.025
+  },
+  {
+   "timesteps": 850000,
+   "cost": 20.902
+  },
+  {
+   "timesteps": 900000,
+   "cost": 21.137
+  },
+  {
+   "timesteps": 950000,
+   "cost": 23.414
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 21.914
+  }
+ ],
+ "dqn_p1_rs100_noiq_s1234_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 72.673
+  },
+  {
+   "timesteps": 100000,
+   "cost": 38.863
+  },
+  {
+   "timesteps": 150000,
+   "cost": 41.239
+  },
+  {
+   "timesteps": 200000,
+   "cost": 22.335
+  },
+  {
+   "timesteps": 250000,
+   "cost": 22.12
+  },
+  {
+   "timesteps": 300000,
+   "cost": 36.777
+  },
+  {
+   "timesteps": 350000,
+   "cost": 21.381
+  },
+  {
+   "timesteps": 400000,
+   "cost": 22.19
+  },
+  {
+   "timesteps": 450000,
+   "cost": 21.424
+  },
+  {
+   "timesteps": 500000,
+   "cost": 23.317
+  },
+  {
+   "timesteps": 550000,
+   "cost": 21.498
+  },
+  {
+   "timesteps": 600000,
+   "cost": 22.345
+  },
+  {
+   "timesteps": 650000,
+   "cost": 22.139
+  },
+  {
+   "timesteps": 700000,
+   "cost": 22.317
+  },
+  {
+   "timesteps": 750000,
+   "cost": 23.462
+  },
+  {
+   "timesteps": 800000,
+   "cost": 22.747
+  },
+  {
+   "timesteps": 850000,
+   "cost": 21.523
+  },
+  {
+   "timesteps": 900000,
+   "cost": 24.867
+  },
+  {
+   "timesteps": 950000,
+   "cost": 20.989
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 25.528
+  }
+ ],
+ "dqn_p1_rs100_s1234_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 116.734
+  },
+  {
+   "timesteps": 100000,
+   "cost": 38.251
+  },
+  {
+   "timesteps": 150000,
+   "cost": 35.47
+  },
+  {
+   "timesteps": 200000,
+   "cost": 22.582
+  },
+  {
+   "timesteps": 250000,
+   "cost": 26.553
+  },
+  {
+   "timesteps": 300000,
+   "cost": 24.491
+  },
+  {
+   "timesteps": 350000,
+   "cost": 22.947
+  },
+  {
+   "timesteps": 400000,
+   "cost": 24.464
+  },
+  {
+   "timesteps": 450000,
+   "cost": 21.178
+  },
+  {
+   "timesteps": 500000,
+   "cost": 20.819
+  },
+  {
+   "timesteps": 550000,
+   "cost": 24.297
+  },
+  {
+   "timesteps": 600000,
+   "cost": 23.613
+  },
+  {
+   "timesteps": 650000,
+   "cost": 21.146
+  },
+  {
+   "timesteps": 700000,
+   "cost": 25.515
+  },
+  {
+   "timesteps": 750000,
+   "cost": 21.965
+  },
+  {
+   "timesteps": 800000,
+   "cost": 23.584
+  },
+  {
+   "timesteps": 850000,
+   "cost": 22.364
+  },
+  {
+   "timesteps": 900000,
+   "cost": 25.638
+  },
+  {
+   "timesteps": 950000,
+   "cost": 21.366
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 22.492
+  }
+ ],
+ "dqn_joint_rs0.01_1M": {
+  "note": "stopped early (cost = total daily cost, both products)",
+  "curve": [
+   {
+    "timesteps": 50000,
+    "cost": 10361.0
+   },
+   {
+    "timesteps": 100000,
+    "cost": 16160.52
+   },
+   {
+    "timesteps": 150000,
+    "cost": 16288.65
+   },
+   {
+    "timesteps": 200000,
+    "cost": 14407.53
+   },
+   {
+    "timesteps": 250000,
+    "cost": 16802.89
+   },
+   {
+    "timesteps": 300000,
+    "cost": 15784.76
+   },
+   {
+    "timesteps": 350000,
+    "cost": 7172.85
+   },
+   {
+    "timesteps": 400000,
+    "cost": 5784.96
+   },
+   {
+    "timesteps": 450000,
+    "cost": 14477.64
+   },
+   {
+    "timesteps": 500000,
+    "cost": 11095.64
+   }
+  ]
+ },
+ "dqn_joint_rs0.05_1M": {
+  "note": "stopped early (cost = total daily cost, both products)",
+  "curve": [
+   {
+    "timesteps": 50000,
+    "cost": 5601.28
+   },
+   {
+    "timesteps": 100000,
+    "cost": 8060.27
+   },
+   {
+    "timesteps": 150000,
+    "cost": 24841.76
+   },
+   {
+    "timesteps": 200000,
+    "cost": 17619.32
+   },
+   {
+    "timesteps": 250000,
+    "cost": 23026.84
+   }
+  ]
+ }
+}

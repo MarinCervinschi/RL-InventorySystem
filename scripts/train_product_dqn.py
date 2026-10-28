@@ -22,7 +22,10 @@ import torch
 from stable_baselines3.common.logger import configure
 
 from src.agents import DQNAgent
-from src.agents.callbacks.joint_eval_callback import JointEvalCallback
+from src.agents.callbacks.joint_eval_callback import (
+    JointEvalCallback,
+    product_policy_factory,
+)
 from src.environment import (
     ProductControlSpec,
     ProductInventoryEnvironment,
@@ -48,6 +51,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--final-eps", type=float, default=0.02)
     p.add_argument("--net-arch", type=int, nargs="+", default=[128, 128])
     p.add_argument("--reward-scale", type=float, default=1 / 20)
+    p.add_argument(
+        "--no-purchase-cost",
+        action="store_true",
+        help="exclude i·q from the reward (phase C); evaluation uses the full cost",
+    )
     p.add_argument("--obs-scale", type=float, default=50.0)
     p.add_argument("--max-level", type=int, default=50)
     p.add_argument("--seed", type=int, default=TRAINING_SEED)
@@ -76,6 +84,7 @@ def main() -> None:
         partner=partner,
         spec=spec,
         reward_scale=args.reward_scale,
+        purchase_cost_in_reward=not args.no_purchase_cost,
         random_seed=args.seed,
     )
     print(env)
@@ -103,6 +112,7 @@ def main() -> None:
         "product_id": args.product,
         "spec": spec.to_dict(),
         "reward_scale": args.reward_scale,
+        "purchase_cost_in_reward": not args.no_purchase_cost,
         "episode_length": env.episode_length,
         "partner": partner.name,
         "hyperparams": {**agent.hyperparams, "net_arch": args.net_arch},
@@ -110,8 +120,8 @@ def main() -> None:
     }
 
     eval_callback = JointEvalCallback(
-        spec=spec,
-        partner=partner,
+        make_policies=product_policy_factory(spec, partner),
+        cost_key=f"cost_{args.product}",
         seeds=generate_seeds(args.eval_seeds, start_index=VALIDATION_SEED_START),
         eval_freq=args.eval_freq,
         best_model_dir=out / "best",
