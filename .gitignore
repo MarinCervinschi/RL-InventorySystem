@@ -213,3 +213,5 @@ __marimo__/
 
 /**/logs/
 /**/models/
+# MLflow local store (the tracking server is remote)
+mlruns/

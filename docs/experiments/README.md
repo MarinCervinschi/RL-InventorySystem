@@ -17,7 +17,9 @@ how it was evaluated, every result (also the ones that were later revised) and h
 | Scripts | [`scripts/`](../../scripts/) (training, evaluation, (s,S) tuning, ablation) |
 | Raw results (tables, grid search, training curves) | [`data/`](data/) |
 
-Trained models are in `models/` (gitignored, local only).
+| MLflow tracking (logging code, backfill script) | [`src/tracking/`](../../src/tracking/), [`scripts/log_runs_to_mlflow.py`](../../scripts/log_runs_to_mlflow.py) |
+
+Trained models are in `models/` (gitignored, local) and on MLflow (see §8).
 
 ## 1. What changed with respect to the original DQN
 
@@ -139,4 +141,38 @@ Then run `notebooks/welch_procedure_product_dqn_v3.ipynb` (≈ 20 min). Note: th
 - Phase D could be pushed further (larger `--max-delta`, longer training, a distributional/double DQN
   such as QR-DQN from `sb3-contrib`), but the expected gain is small: the residual agent is already within
   1.3% of the optimal static rule.
-- **Model tracking**: `models/` is local only; to be logged to MLflow.
+
+## 8. MLflow
+
+Server `http://100.89.8.106:5000` (tailnet only, no auth, artifacts proxied by the server),
+experiment **`rl-inventory-system`**. Client pinned to `mlflow>=3.17,<3.18` (server 3.17.2).
+
+| Run | Content |
+|---|---|
+| one per folder in `models/` (18) | params from the checkpoint metadata; `progress.csv` curves (`rollout/*`, `train/*`, `eval/*`) and `validation/*` as step metrics; `best/*` summary; `progress.csv`, `eval_history.json`, training log and `final/` checkpoint as artifacts; best checkpoint as pyfunc model |
+| `ss-grid-search` | best (s,S) per product, data/05–06 |
+| `welch-v3-test300` | every metric of data/09 per policy (`ss_tuned/cost_mean`, `dqn_residual/p0_fill_rate`, …), notebook v3 |
+
+Tags: `phase` (A, C, D, ablation, ss-tuning, evaluation), `experiment_row` (row of §3), `product`,
+`mlflow.source.git.commit`. The backfilled runs carry the first commit containing the code that
+reproduces them (`backfilled=true`), and keep the original training start/end times.
+
+**Model Registry**: `rl-inventory-dqn-p0` / `rl-inventory-dqn-p1`, one version per per-product run
+(the joint-env ablation models are logged but not registered). `@champion` = the checkpoint selected
+on validation seeds 900–909 and evaluated on test seeds 0–299 in notebook v3 (`dqn_p{0,1}_residual_1M`);
+note that the re-tuned (s,S) is still cheaper. `@candidate` is not used yet.
+
+```bash
+export MLFLOW_TRACKING_URI=http://100.89.8.106:5000
+# new training runs: log + register at the end of training
+uv run python -m scripts.train_product_dqn ... --mlflow --mlflow-tags phase=E
+# backfill of the existing folders (creates new runs: do not run it twice)
+uv run python -m scripts.log_runs_to_mlflow --dry-run
+```
+
+```python
+model = mlflow.pyfunc.load_model("models:/rl-inventory-dqn-p0@champion")
+actions = model.predict(observations)  # normalized observations, (n, obs_dim) float32
+path = mlflow.artifacts.download_artifacts("models:/rl-inventory-dqn-p0@champion")
+policy = ModelProductPolicy.load(Path(path) / "artifacts" / "best")  # full policy for run_joint_episode
+```

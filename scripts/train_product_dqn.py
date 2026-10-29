@@ -32,6 +32,7 @@ from src.environment import (
     SSProductPolicy,
 )
 from src.seeds import TRAINING_SEED, generate_seeds
+from src.tracking import log_training_run, require_tracking_uri
 
 VALIDATION_SEED_START = 900  # validation seeds are disjoint from test seeds (0..)
 
@@ -70,12 +71,21 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--eval-seeds", type=int, default=5)
     p.add_argument("--threads", type=int, default=1)
     p.add_argument("--out", type=Path, default=None)
+    p.add_argument(
+        "--mlflow",
+        action="store_true",
+        help="log the run to MLflow at the end (needs MLFLOW_TRACKING_URI) "
+        "and register the best checkpoint as rl-inventory-dqn-p<product>",
+    )
+    p.add_argument("--mlflow-tags", nargs="*", default=[], metavar="KEY=VALUE")
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     torch.set_num_threads(args.threads)
+    if args.mlflow:
+        require_tracking_uri()  # fail before training, not after
 
     out = args.out or Path("models") / (
         f"dqn_p{args.product}_{datetime.now():%Y%m%d_%H%M%S}"
@@ -132,6 +142,7 @@ def main() -> None:
         "partner": partner.name,
         "hyperparams": {**agent.hyperparams, "net_arch": args.net_arch},
         "total_timesteps": args.timesteps,
+        "eval_seeds": args.eval_seeds,
     }
 
     eval_callback = JointEvalCallback(
@@ -158,6 +169,14 @@ def main() -> None:
     with open(out / "eval_history.json", "w") as f:
         json.dump(eval_callback.history, f, indent=2)
     print(f"Done in {elapsed / 60:.1f} min -> {out}")
+
+    if args.mlflow:
+        tags = dict(t.split("=", 1) for t in args.mlflow_tags)
+        tags.setdefault("product", f"P{args.product}")
+        run = log_training_run(
+            out, tags=tags, registered_model_name=f"rl-inventory-dqn-p{args.product}"
+        )
+        print(f"MLflow run {run.info.run_id}")
 
 
 if __name__ == "__main__":

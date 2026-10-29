@@ -9,6 +9,7 @@ dependencies = [
     "ipywidgets>=8.1.8",
     "jupyterlab>=4.5.1",
     "matplotlib>=3.10.8",
+    "mlflow>=3.17,<3.18",
     "numpy>=2.4.0",
     "optuna>=4.6.0",
     "plotly>=6.5.1",
