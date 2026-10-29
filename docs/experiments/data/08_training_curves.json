@@ -1052,5 +1052,333 @@
     "cost": 23026.84
    }
   ]
- }
+ },
+ "dqn_p0_residual_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 18.371
+  },
+  {
+   "timesteps": 100000,
+   "cost": 18.438
+  },
+  {
+   "timesteps": 150000,
+   "cost": 18.381
+  },
+  {
+   "timesteps": 200000,
+   "cost": 18.347
+  },
+  {
+   "timesteps": 250000,
+   "cost": 17.911
+  },
+  {
+   "timesteps": 300000,
+   "cost": 18.365
+  },
+  {
+   "timesteps": 350000,
+   "cost": 18.427
+  },
+  {
+   "timesteps": 400000,
+   "cost": 18.639
+  },
+  {
+   "timesteps": 450000,
+   "cost": 18.012
+  },
+  {
+   "timesteps": 500000,
+   "cost": 18.412
+  },
+  {
+   "timesteps": 550000,
+   "cost": 18.553
+  },
+  {
+   "timesteps": 600000,
+   "cost": 18.306
+  },
+  {
+   "timesteps": 650000,
+   "cost": 18.05
+  },
+  {
+   "timesteps": 700000,
+   "cost": 18.141
+  },
+  {
+   "timesteps": 750000,
+   "cost": 17.547
+  },
+  {
+   "timesteps": 800000,
+   "cost": 18.413
+  },
+  {
+   "timesteps": 850000,
+   "cost": 18.197
+  },
+  {
+   "timesteps": 900000,
+   "cost": 18.526
+  },
+  {
+   "timesteps": 950000,
+   "cost": 18.043
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 18.291
+  }
+ ],
+ "dqn_p0_residual_s1234_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 18.735
+  },
+  {
+   "timesteps": 100000,
+   "cost": 18.358
+  },
+  {
+   "timesteps": 150000,
+   "cost": 17.962
+  },
+  {
+   "timesteps": 200000,
+   "cost": 18.547
+  },
+  {
+   "timesteps": 250000,
+   "cost": 18.069
+  },
+  {
+   "timesteps": 300000,
+   "cost": 18.234
+  },
+  {
+   "timesteps": 350000,
+   "cost": 18.116
+  },
+  {
+   "timesteps": 400000,
+   "cost": 17.904
+  },
+  {
+   "timesteps": 450000,
+   "cost": 18.236
+  },
+  {
+   "timesteps": 500000,
+   "cost": 18.354
+  },
+  {
+   "timesteps": 550000,
+   "cost": 17.857
+  },
+  {
+   "timesteps": 600000,
+   "cost": 18.268
+  },
+  {
+   "timesteps": 650000,
+   "cost": 18.396
+  },
+  {
+   "timesteps": 700000,
+   "cost": 18.038
+  },
+  {
+   "timesteps": 750000,
+   "cost": 18.357
+  },
+  {
+   "timesteps": 800000,
+   "cost": 18.307
+  },
+  {
+   "timesteps": 850000,
+   "cost": 17.877
+  },
+  {
+   "timesteps": 900000,
+   "cost": 18.437
+  },
+  {
+   "timesteps": 950000,
+   "cost": 18.258
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 18.115
+  }
+ ],
+ "dqn_p1_residual_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 21.016
+  },
+  {
+   "timesteps": 100000,
+   "cost": 20.788
+  },
+  {
+   "timesteps": 150000,
+   "cost": 20.849
+  },
+  {
+   "timesteps": 200000,
+   "cost": 20.622
+  },
+  {
+   "timesteps": 250000,
+   "cost": 20.483
+  },
+  {
+   "timesteps": 300000,
+   "cost": 21.24
+  },
+  {
+   "timesteps": 350000,
+   "cost": 20.507
+  },
+  {
+   "timesteps": 400000,
+   "cost": 20.995
+  },
+  {
+   "timesteps": 450000,
+   "cost": 20.694
+  },
+  {
+   "timesteps": 500000,
+   "cost": 20.945
+  },
+  {
+   "timesteps": 550000,
+   "cost": 20.99
+  },
+  {
+   "timesteps": 600000,
+   "cost": 20.696
+  },
+  {
+   "timesteps": 650000,
+   "cost": 21.016
+  },
+  {
+   "timesteps": 700000,
+   "cost": 20.832
+  },
+  {
+   "timesteps": 750000,
+   "cost": 20.617
+  },
+  {
+   "timesteps": 800000,
+   "cost": 20.744
+  },
+  {
+   "timesteps": 850000,
+   "cost": 20.431
+  },
+  {
+   "timesteps": 900000,
+   "cost": 20.712
+  },
+  {
+   "timesteps": 950000,
+   "cost": 20.717
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 20.717
+  }
+ ],
+ "dqn_p1_residual_s1234_1M": [
+  {
+   "timesteps": 50000,
+   "cost": 20.79
+  },
+  {
+   "timesteps": 100000,
+   "cost": 20.927
+  },
+  {
+   "timesteps": 150000,
+   "cost": 20.95
+  },
+  {
+   "timesteps": 200000,
+   "cost": 21.062
+  },
+  {
+   "timesteps": 250000,
+   "cost": 20.482
+  },
+  {
+   "timesteps": 300000,
+   "cost": 21.036
+  },
+  {
+   "timesteps": 350000,
+   "cost": 20.681
+  },
+  {
+   "timesteps": 400000,
+   "cost": 20.78
+  },
+  {
+   "timesteps": 450000,
+   "cost": 20.498
+  },
+  {
+   "timesteps": 500000,
+   "cost": 20.679
+  },
+  {
+   "timesteps": 550000,
+   "cost": 20.708
+  },
+  {
+   "timesteps": 600000,
+   "cost": 20.882
+  },
+  {
+   "timesteps": 650000,
+   "cost": 20.726
+  },
+  {
+   "timesteps": 700000,
+   "cost": 20.553
+  },
+  {
+   "timesteps": 750000,
+   "cost": 20.766
+  },
+  {
+   "timesteps": 800000,
+   "cost": 21.05
+  },
+  {
+   "timesteps": 850000,
+   "cost": 21.084
+  },
+  {
+   "timesteps": 900000,
+   "cost": 21.229
+  },
+  {
+   "timesteps": 950000,
+   "cost": 20.78
+  },
+  {
+   "timesteps": 1000000,
+   "cost": 20.738
+  }
+ ]
 }

@@ -77,12 +77,19 @@ class ProductControlSpec:
         a >= 1 -> raise IP to S = levels[a-1], i.e. q = max(0, S - IP)
 
     An (s,S) policy is the special case "a = index(S)+1 if IP <= s else 0".
+
+    Residual mode (`residual_base=(s, S)`, phase D): Discrete((2·max_delta+1)²)
+        a -> (δs, δS) ∈ {-max_delta..max_delta}², then the (s+δs, S+δS) rule:
+        q = S+δS - IP if IP <= s+δs else 0.
+    The base (s,S) is the action (0, 0), and every action stays close to it.
     """
 
     product_id: int
     history_length: int
     levels: Tuple[int, ...] = tuple(range(51))
     obs_scale: float = 50.0
+    residual_base: Optional[Tuple[int, int]] = None
+    max_delta: int = 3
 
     @classmethod
     def for_product(
@@ -100,10 +107,40 @@ class ProductControlSpec:
             obs_scale=obs_scale,
         )
 
+    @classmethod
+    def residual_for_product(
+        cls,
+        product_id: int,
+        base: Optional[Tuple[int, int]] = None,
+        max_delta: int = 3,
+        obs_scale: float = 50.0,
+    ) -> "ProductControlSpec":
+        """Residual spec around `base` (default: `TUNED_SS_PARAMS`)."""
+        product = create_default_products()[product_id]
+        return cls(
+            product_id=product_id,
+            history_length=default_history_length(product),
+            obs_scale=obs_scale,
+            residual_base=tuple(base or TUNED_SS_PARAMS[product_id]),
+            max_delta=max_delta,
+        )
+
     @property
     def n_actions(self) -> int:
-        """Number of discrete actions (no-order + one per level)."""
+        """Number of discrete actions."""
+        if self.residual_base is not None:
+            return (2 * self.max_delta + 1) ** 2
         return len(self.levels) + 1
+
+    def residual(self, action: int) -> Tuple[int, int]:
+        """(δs, δS) encoded by a residual action."""
+        width = 2 * self.max_delta + 1
+        return action // width - self.max_delta, action % width - self.max_delta
+
+    @property
+    def zero_residual_action(self) -> int:
+        """Action index of (δs, δS) = (0, 0), i.e. the base (s,S)."""
+        return self.max_delta * (2 * self.max_delta + 1) + self.max_delta
 
     @property
     def obs_dim(self) -> int:
@@ -129,6 +166,11 @@ class ProductControlSpec:
         action = int(action)
         if not 0 <= action < self.n_actions:
             raise ValueError(f"Action {action} out of range [0, {self.n_actions})")
+        if self.residual_base is not None:
+            ds, dS = self.residual(action)
+            s, S = self.residual_base[0] + ds, self.residual_base[1] + dS
+            ip = state.get_inventory_position(self.product_id)
+            return max(0, S - ip) if ip <= s else 0
         if action == 0:
             return 0
         target = self.levels[action - 1]
@@ -138,6 +180,8 @@ class ProductControlSpec:
         """JSON-serialisable representation (saved with the model)."""
         d = asdict(self)
         d["levels"] = list(self.levels)
+        if self.residual_base is not None:
+            d["residual_base"] = list(self.residual_base)
         return d
 
     @classmethod
@@ -148,6 +192,12 @@ class ProductControlSpec:
             history_length=int(d["history_length"]),
             levels=tuple(int(x) for x in d["levels"]),
             obs_scale=float(d["obs_scale"]),
+            residual_base=(
+                tuple(int(x) for x in d["residual_base"])  # type: ignore[arg-type]
+                if d.get("residual_base") is not None
+                else None
+            ),
+            max_delta=int(d.get("max_delta", 3)),
         )
 
 
@@ -238,6 +288,7 @@ class ModelProductPolicy(ProductPolicy):
 
     def __post_init__(self):
         self.history = self.spec.new_history()
+        self.last_action: Optional[int] = None  # for analysis (e.g. residuals)
 
     @property
     def product_id(self) -> int:  # type: ignore[override]
@@ -249,7 +300,8 @@ class ModelProductPolicy(ProductPolicy):
     def act(self, state: State) -> int:
         obs = self.spec.observation(state, self.history)
         action, _ = self.model.predict(obs, deterministic=self.deterministic)
-        quantity = self.spec.quantity(int(action), state)
+        self.last_action = int(action)
+        quantity = self.spec.quantity(self.last_action, state)
         self.history.push(quantity)
         return quantity
 

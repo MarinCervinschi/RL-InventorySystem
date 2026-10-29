@@ -58,6 +58,13 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--obs-scale", type=float, default=50.0)
     p.add_argument("--max-level", type=int, default=50)
+    p.add_argument(
+        "--residual",
+        action="store_true",
+        help="phase D: actions are (δs, δS) corrections of the tuned (s,S)",
+    )
+    p.add_argument("--max-delta", type=int, default=3)
+    p.add_argument("--partner", choices=["baseline", "tuned"], default="baseline")
     p.add_argument("--seed", type=int, default=TRAINING_SEED)
     p.add_argument("--eval-freq", type=int, default=50_000)
     p.add_argument("--eval-seeds", type=int, default=5)
@@ -75,10 +82,18 @@ def main() -> None:
     )
     out.mkdir(parents=True, exist_ok=True)
 
-    spec = ProductControlSpec.for_product(
-        args.product, levels=tuple(range(args.max_level + 1)), obs_scale=args.obs_scale
-    )
-    partner = SSProductPolicy.baseline(1 - args.product)
+    if args.residual:
+        spec = ProductControlSpec.residual_for_product(
+            args.product, max_delta=args.max_delta, obs_scale=args.obs_scale
+        )
+    else:
+        spec = ProductControlSpec.for_product(
+            args.product,
+            levels=tuple(range(args.max_level + 1)),
+            obs_scale=args.obs_scale,
+        )
+    # The partner only affects the logged total cost (products are independent)
+    partner = getattr(SSProductPolicy, args.partner)(1 - args.product)
     env = ProductInventoryEnvironment(
         product_id=args.product,
         partner=partner,

@@ -10,6 +10,7 @@ how it was evaluated, every result (also the ones that were later revised) and h
 | Original Welch analysis (joint DQN + PPO, January) | [`notebooks/welch_procedure.ipynb`](../../notebooks/welch_procedure.ipynb) |
 | Welch analysis v1 — per-product DQN vs **original** (s,S) | [`notebooks/welch_procedure_product_dqn_v1.ipynb`](../../notebooks/welch_procedure_product_dqn_v1.ipynb) |
 | Welch analysis v2 — vs **re-tuned** (s,S), phase C, ablation | [`notebooks/welch_procedure_product_dqn_v2.ipynb`](../../notebooks/welch_procedure_product_dqn_v2.ipynb) |
+| Welch analysis v3 — adds phase D (residual policy) and its action analysis | [`notebooks/welch_procedure_product_dqn_v3.ipynb`](../../notebooks/welch_procedure_product_dqn_v3.ipynb) |
 | Per-product environment | [`src/environment/structured_env.py`](../../src/environment/structured_env.py), [`src/environment/product_control.py`](../../src/environment/product_control.py) |
 | Simulation with common random numbers | [`src/simulation/streams.py`](../../src/simulation/streams.py) |
 | Joint evaluation (CI, paired differences, service levels) | [`src/agents/metrics/joint_evaluation.py`](../../src/agents/metrics/joint_evaluation.py) |
@@ -30,6 +31,11 @@ Trained models are in `models/` (gitignored, local only).
 
 An (s,S) policy is a special case of the new action space (order up to S when IP ≤ s), so the
 agent can represent at least the baseline.
+
+**Phase D (residual mode).** With `ProductControlSpec.residual_for_product` the action is a correction
+(δs, δS) ∈ {−3..3}² (`Discrete(49)`) of the re-tuned (s,S): each day the rule (s+δs, S+δS) is applied on the
+inventory position. (δs, δS) = (0, 0) is exactly the re-tuned (s,S), and every action stays close to it, so
+even a random policy costs about as much as the optimal (s,S). Observation and reward as in phase C.
 
 ## 2. Evaluation procedure
 
@@ -71,8 +77,9 @@ The same procedure is used by `scripts/evaluate_joint.py`, the training callback
 | 6 | Phase C: reward without i·q (×1/100), 2 training seeds per product | −0.78 $/day vs the DQN with i·q, higher fill rate, somewhat less oscillation | notebook v2 |
 | 7 | Second training seed (1234) for the i·q variant | best checkpoint per product chosen on the same 10 validation seeds | notebook v2 |
 | 8 | **Ablation**: original joint env + same hyperparameters + reward × 1/100 (and × 1/20) | $5622.85 ± 221.57/day (30 seeds): inventories of thousands of units; stopped at ≈ 500k / 250k steps | notebook v2 §9, [`08`](data/08_training_curves.json) |
+| 9 | **Phase D**: residual policy on the re-tuned (s,S), 2 training seeds per product | best DQN so far and very stable during training (±0.3 $/day vs ±2–3), but still +0.52 ± 0.16 $/day (+1.3%) vs the re-tuned (s,S) | notebook v3, [`09`](data/09_welch_v3_results.json) |
 
-## 4. Final results (notebook v2, 300 test seeds, warmup 51 days)
+## 4. Final results (notebook v3, 300 test seeds, warmup 51 days)
 
 | Policy | $/day ± CI95 | Δ vs (s,S) re-tuned | P0 $/day | P1 $/day | Fill rate P0 / P1 |
 |---|---|---|---|---|---|
@@ -80,6 +87,7 @@ The same procedure is used by `scripts/evaluate_joint.py`, the training callback
 | **(s,S) re-tuned (25, 30) / (23, 29)** | **38.86 ± 0.34** | — | 17.91 | 20.94 | 84.0% / 83.2% |
 | DQN, i·q in reward | 41.47 ± 0.51 | +2.61 ± 0.29 | 19.71 | 21.75 | 73.9% / 76.2% |
 | DQN, no i·q (phase C) | 40.69 ± 0.44 | +1.84 ± 0.24 | 19.23 | 21.47 | 76.1% / 78.0% |
+| DQN residual on (s,S) (phase D) | 39.37 ± 0.38 | +0.52 ± 0.16 | 18.10 | 21.27 | 83.7% / 80.4% |
 
 ## 5. Findings
 
@@ -95,6 +103,15 @@ The same procedure is used by `scripts/evaluate_joint.py`, the training callback
   (IP ≈ 24 for P0, ≈ 25 for P1 vs a band 25–30 / 23–29 for the optimal (s,S)), so it stocks out more
   often (π = 7 per unit-day). The optimal band is only 5 units wide; the DQN does not hit it reliably
   (validation cost oscillates by ±2–3 $/day between checkpoints).
+- **Phase D** removes that problem (the agent cannot drift far from the (s,S)) and gets within 1.3% of
+  it, but does not find an improvement. What it learned (notebook v3 §8):
+  - P0: (δs, δS) = (−1, 0) on 86% of the days, i.e. a different *static* rule (24, 30), which the grid
+    search rates as equivalent to (25, 30);
+  - P1: switches between (21, 27), (26, 29) and (20, 32) and changes the (s,S) decision on 25% of the
+    days, at a small cost (+0.33 $/day).
+  The order history (age of the orders in transit) does not seem to carry exploitable information
+  beyond the inventory position: within this setting the (s,S) rule on the IP is close to optimal and the
+  remaining gap is within the noise of DQN training.
 
 ## 6. Reproduce
 
@@ -106,17 +123,20 @@ uv run python -m scripts.tune_ss_policy --workers 4
 uv run python -m scripts.train_product_dqn --product 0 --timesteps 1000000 --reward-scale 0.01 --no-purchase-cost --eval-seeds 10 --out models/dqn_p0_rs100_noiq_1M
 uv run python -m scripts.train_product_dqn --product 1 --timesteps 1000000 --reward-scale 0.01 --no-purchase-cost --eval-seeds 10 --out models/dqn_p1_rs100_noiq_1M
 #   i·q variant: drop --no-purchase-cost; second training seed: --seed 1234
+# phase D: residual policy on the re-tuned (s,S)
+nice -n 19 uv run python -m scripts.train_product_dqn --product 0 --timesteps 1000000 --residual --max-delta 3 --partner tuned --reward-scale 0.01 --no-purchase-cost --eval-seeds 10 --out models/dqn_p0_residual_1M
 # ablation on the original joint environment
 uv run python -m scripts.train_joint_dqn --reward-scale 0.01 --out models/dqn_joint_rs0.01_1M
 # quick joint evaluation (20 seeds) of two checkpoints vs the baseline (s,S)
 uv run python -m scripts.evaluate_joint --p0 models/dqn_p0_rs100_noiq_1M/best --p1 models/dqn_p1_rs100_noiq_1M/best
 ```
 
-Then run `notebooks/welch_procedure_product_dqn_v2.ipynb` (≈ 15 min). Note: the default
+Then run `notebooks/welch_procedure_product_dqn_v3.ipynb` (≈ 20 min). Note: the default
 `--reward-scale` of `train_product_dqn` is still 1/20.
 
 ## 7. Open points
 
-- **Phase D**: residual policy on top of the re-tuned (s,S) (the agent picks a ±k correction of s and S),
-  starting from $38.86/day instead of learning the threshold from scratch.
+- Phase D could be pushed further (larger `--max-delta`, longer training, a distributional/double DQN
+  such as QR-DQN from `sb3-contrib`), but the expected gain is small: the residual agent is already within
+  1.3% of the optimal static rule.
 - **Model tracking**: `models/` is local only; to be logged to MLflow.
